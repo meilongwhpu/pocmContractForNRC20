@@ -466,6 +466,7 @@ public class Pocm extends PocmToken implements Contract {
                 mining_tmp = mining_tmp.add(depositAmountNULS.multiply(currentPrice).scaleByPowerOfTen(decimals()).toBigInteger().multiply(BigInteger.valueOf(awardingRound)));
                 nextStartMiningHeight=nextStartMiningHeight+awardingCycle*awardingRound+1;
             }else{
+
                 //上次获取回报时的减半周期数
                 int lastRewardHalvingRound=  Integer.parseInt(String.valueOf(lastEndMiningHeight-this.createHeight))/rewardHalvingCycle;
                 //减半周期
