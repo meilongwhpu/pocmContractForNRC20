@@ -87,5 +87,48 @@ public class PocmUtil {
         return addresses;
     }
 
+    private static boolean isNumeric(String str){
+        for(int i=0;i<str.length();i++){
+            int chr=str.charAt(i);
+            if(chr<48||chr>57)
+                return false;
+        }
+        return true;
+    }
 
+    public static boolean canConvertNumeric(String str){
+        String str_trim=str.trim();
+        String max=String.valueOf(Integer.MAX_VALUE);
+        if(isNumeric(str_trim)){
+            if(str_trim.length()>max.length()){
+                return false;
+            }else{
+                if(str_trim.compareTo(max)>0){
+                    return false;
+                }else{
+                    return true;
+                }
+            }
+        }else{
+            return false;
+        }
+    }
+
+    public static boolean canConvertLongNumeric(String str){
+        String str_trim=str.trim();
+        String max=String.valueOf(Long.MAX_VALUE);
+        if(isNumeric(str_trim)){
+            if(str_trim.length()>max.length()){
+                return false;
+            }else{
+                if(str_trim.compareTo(max)>0){
+                    return false;
+                }else{
+                    return true;
+                }
+            }
+        }else{
+            return false;
+        }
+    }
 }

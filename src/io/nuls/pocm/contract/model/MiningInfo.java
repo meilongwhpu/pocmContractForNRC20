@@ -24,8 +24,8 @@
 package io.nuls.pocm.contract.model;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import static io.nuls.contract.sdk.Utils.require;
 
@@ -42,7 +42,7 @@ public class MiningInfo {
     private BigInteger receivedMining;
 
     //挖矿明细
-    private List<MiningDetailInfo> miningDetailInfo= new ArrayList<MiningDetailInfo>();
+    private Map<Long,MiningDetailInfo> miningDetailInfos =new HashMap<Long,MiningDetailInfo>();
 
     public MiningInfo() {
         this.totalMining = BigInteger.ZERO;
@@ -52,7 +52,7 @@ public class MiningInfo {
     public MiningInfo(MiningInfo info){
         this.totalMining=info.totalMining;
         this.receivedMining=info.receivedMining;
-        this.miningDetailInfo=info.miningDetailInfo;
+        this.miningDetailInfos=info.miningDetailInfos;
     }
 
 
@@ -72,58 +72,44 @@ public class MiningInfo {
         this.receivedMining = receivedMining;
     }
 
-    public List<MiningDetailInfo> getMiningDetailInfo() {
-        return miningDetailInfo;
+    public Map<Long, MiningDetailInfo> getMiningDetailInfos() {
+        return miningDetailInfos;
     }
 
-    public void setMiningDetailInfo(List<MiningDetailInfo> miningDetailInfo) {
-        this.miningDetailInfo = miningDetailInfo;
+    public void setMiningDetailInfos(Map<Long, MiningDetailInfo> miningDetailInfos) {
+        this.miningDetailInfos = miningDetailInfos;
     }
-
     /**
      * 根据抵押编号查找挖矿明细
      * @param depositNumber
      * @return
      */
     public MiningDetailInfo getMiningDetailInfoByNumber(long depositNumber){
-        MiningDetailInfo info=null;
-        for (int i=0;i<miningDetailInfo.size();i++) {
-            if(miningDetailInfo.get(i).getDepositNumber()==depositNumber){
-                info =miningDetailInfo.get(i);
-                break;
-            }
-        }
+        MiningDetailInfo info=miningDetailInfos.get(depositNumber);
         require(info != null, "未找到此抵押编号的挖矿详细信息");
         return info;
     }
 
-    public MiningDetailInfo removeMiningDetailInfoByNumber(long depositNumber){
-        MiningDetailInfo info=null;
-        for (int i=0;i<miningDetailInfo.size();i++) {
-            if(miningDetailInfo.get(i).getDepositNumber()==depositNumber){
-                info= miningDetailInfo.remove(i);
-                break;
-            }
-        }
-        return info;
+    public void removeMiningDetailInfoByNumber(long depositNumber){
+        miningDetailInfos.remove(depositNumber);
     }
 
     @Override
     public String toString(){
         return "{totalMining:"+totalMining.toString()+",receivedMining:"+receivedMining.toString()
-                +",miningDetailInfo:"+this.convertListToString()+"}";
+                +",miningDetailInfo:"+this.convertMapToString()+"}";
     }
 
-    private String convertListToString(){
-            String detailinfo ="{";
-            String temp="";
-            for(int i=0;i<miningDetailInfo.size();i++){
-                MiningDetailInfo detailInfo= miningDetailInfo.get(i);
-                temp =detailInfo.toString();
-                detailinfo=detailinfo+temp+",";
-            }
-            detailinfo=detailinfo.substring(0,detailinfo.length()-1)+"}";
-            return detailinfo;
+    private String convertMapToString(){
+        String detailinfo ="{";
+        String temp="";
+        for (Long key : miningDetailInfos.keySet()) {
+            MiningDetailInfo detailInfo=  miningDetailInfos.get(key);
+            temp =detailInfo.toString();
+            detailinfo=detailinfo+temp+",";
+        }
+        detailinfo=detailinfo.substring(0,detailinfo.length()-1)+"}";
+        return detailinfo;
     }
 
 }

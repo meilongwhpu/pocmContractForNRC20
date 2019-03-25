@@ -1,8 +1,8 @@
 package io.nuls.pocm.contract.model;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import static io.nuls.contract.sdk.Utils.require;
 
@@ -23,7 +23,7 @@ public class DepositInfo {
     private int depositCount;
 
     //抵押详细信息列表
-    private List<DepositDetailInfo> depositDetailInfos = new ArrayList<DepositDetailInfo>();
+    private Map<Long,DepositDetailInfo> depositDetailInfos =new HashMap<Long,DepositDetailInfo>();
 
     public DepositInfo(){
         this.depositTotalAmount=BigInteger.ZERO;
@@ -45,14 +45,13 @@ public class DepositInfo {
         this.depositTotalAmount = depositTotalAmount;
     }
 
-    public List<DepositDetailInfo> getDepositDetailInfos() {
+    public Map<Long, DepositDetailInfo> getDepositDetailInfos() {
         return depositDetailInfos;
     }
 
-    public void setDepositDetailInfos(List<DepositDetailInfo> depositDetailInfos) {
+    public void setDepositDetailInfos(Map<Long, DepositDetailInfo> depositDetailInfos) {
         this.depositDetailInfos = depositDetailInfos;
     }
-
 
     public int getDepositCount() {
         return depositCount;
@@ -77,13 +76,7 @@ public class DepositInfo {
      * @return
      */
     public DepositDetailInfo getDepositDetailInfoByNumber(long depositNumber){
-        DepositDetailInfo info=null;
-        for (int i=0;i<depositDetailInfos.size();i++) {
-            info=depositDetailInfos.get(i);
-           if(info.getDepositNumber()==depositNumber){
-               break;
-           }
-        }
+        DepositDetailInfo info=depositDetailInfos.get(depositNumber);
         require(info != null, "未找到此抵押编号的抵押详细信息");
         return info;
     }
@@ -93,12 +86,7 @@ public class DepositInfo {
      * @param depositNumber
      */
     public void removeDepositDetailInfoByNumber(long depositNumber){
-        for (int i=0;i<depositDetailInfos.size();i++) {
-            if(depositDetailInfos.get(i).getDepositNumber()==depositNumber){
-                depositDetailInfos.remove(i);
-                break;
-            }
-        }
+        depositDetailInfos.remove(depositNumber);
     }
 
     public void clearDepositDetailInfos(){
@@ -111,14 +99,14 @@ public class DepositInfo {
     @Override
     public String toString(){
         return  "{depositTotalAmount:"+depositTotalAmount+",depositorAddress:"+depositorAddress
-                +",depositCount:"+depositCount+",depositDetailInfos:"+convertListToString()+"}}";
+                +",depositCount:"+depositCount+",depositDetailInfos:"+convertMapToString()+"}}";
     }
 
-    private  String convertListToString(){
+    private  String convertMapToString(){
         String detailinfo ="{";
         String temp="";
-        for(int i=0;i<depositDetailInfos.size();i++){
-            DepositDetailInfo detailInfo= depositDetailInfos.get(i);
+        for (Long key : depositDetailInfos.keySet()) {
+            DepositDetailInfo detailInfo=  depositDetailInfos.get(key);
             temp =detailInfo.toString();
             detailinfo=detailinfo+temp+",";
         }

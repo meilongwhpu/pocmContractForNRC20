@@ -1,5 +1,6 @@
 package io.nuls.pocm.contract.model;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 /**
  * 挖矿详细信息
@@ -19,8 +20,15 @@ public class MiningDetailInfo {
     // 挖矿次数
     private int miningCount;
 
-    // 下次挖矿高度
-    private long nextMiningHeight= 0L;
+    // 下次挖矿的开始高度
+    private long nextStartMiningHeight= 0L;
+
+    //下次挖矿的结束高度
+    private  long lastEndMiningHeight=0L;
+
+    //上次挖矿单价
+    private BigDecimal lastMiningPrice = BigDecimal.ZERO;
+
     //来源地址
     private String depositorAddress;
 
@@ -63,12 +71,12 @@ public class MiningDetailInfo {
         this.miningCount = miningCount;
     }
 
-    public long getNextMiningHeight() {
-        return nextMiningHeight;
+    public long getNextStartMiningHeight() {
+        return nextStartMiningHeight;
     }
 
-    public void setNextMiningHeight(long nextMiningHeight) {
-        this.nextMiningHeight = nextMiningHeight;
+    public void setNextStartMiningHeight(long nextStartMiningHeight) {
+        this.nextStartMiningHeight = nextStartMiningHeight;
     }
 
     public long getDepositNumber() {
@@ -79,9 +87,27 @@ public class MiningDetailInfo {
         this.depositNumber = depositNumber;
     }
 
+    public BigDecimal getLastMiningPrice() {
+        return lastMiningPrice;
+    }
+
+    public void setLastMiningPrice(BigDecimal lastMiningPrice) {
+        this.lastMiningPrice = lastMiningPrice;
+    }
+
+    public long getLastEndMiningHeight() {
+        return lastEndMiningHeight;
+    }
+
+    public void setLastEndMiningHeight(long lastEndMiningHeight) {
+        this.lastEndMiningHeight = lastEndMiningHeight;
+    }
+
     @Override
     public String toString(){
         return "{depositNumber:"+depositNumber+",miningAmount:"+miningAmount.toString()+",receiverMiningAddress:"+receiverMiningAddress
-                +",miningCount:"+miningCount+",nextMiningHeight:"+nextMiningHeight+",depositorAddress:"+depositorAddress+"}";
+                +",miningCount:"+miningCount+",nextStartMiningHeight:"+nextStartMiningHeight+" ,lastEndMiningHeight: "+lastEndMiningHeight+",lastMiningPrice: "+lastMiningPrice+",depositorAddress:"+depositorAddress+"}";
     }
+
+
 }
