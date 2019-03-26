@@ -65,7 +65,7 @@ public class PocmToken extends Ownable implements Token{
         this.name = name;
         this.symbol = symbol;
         this.decimals = decimals;
-        totalSupply = initialAmount.multiply(BigInteger.TEN.pow(decimals));
+        this.totalSupply = initialAmount.multiply(BigInteger.TEN.pow(decimals));
     }
 
     @Override
