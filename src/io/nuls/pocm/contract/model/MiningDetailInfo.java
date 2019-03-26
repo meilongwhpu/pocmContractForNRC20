@@ -84,7 +84,7 @@ public class MiningDetailInfo {
     @Override
     public String toString(){
         return "{depositNumber:"+depositNumber+",miningAmount:"+miningAmount.toString()+",receiverMiningAddress:"+receiverMiningAddress
-                +",miningCount:"+miningCount+",nextStartMiningHeight:"+nextStartMiningHeight+" ,lastEndMiningHeight: "+",depositorAddress:"+depositorAddress+"}";
+                +",miningCount:"+miningCount+",nextStartMiningHeight:"+nextStartMiningHeight+",depositorAddress:"+depositorAddress+"}";
     }
 
 
