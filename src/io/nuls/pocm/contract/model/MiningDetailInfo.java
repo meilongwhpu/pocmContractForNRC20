@@ -1,6 +1,5 @@
 package io.nuls.pocm.contract.model;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 /**
  * 挖矿详细信息

@@ -152,7 +152,6 @@ public class Pocm extends PocmToken implements Contract {
     @Payable
     public void depositForOwn() {
         String userStr = Msg.sender().toString();
-        boolean isFirst=false;
         DepositInfo info =depositUsers.get(userStr);
         if(info==null) {
             if (maximumDepositAddressCount > 0) {
@@ -191,7 +190,6 @@ public class Pocm extends PocmToken implements Contract {
     @Payable
     public void depositForOther(@Required Address miningAddress) {
         String userStr = Msg.sender().toString();
-        boolean isFirst=false;
         DepositInfo info =depositUsers.get(userStr);
         if(info==null){
             if(maximumDepositAddressCount>0){
