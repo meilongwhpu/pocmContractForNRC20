@@ -100,14 +100,12 @@ public class PocmUtil {
         String str_trim=str.trim();
         String max=String.valueOf(Integer.MAX_VALUE);
         if(isNumeric(str_trim)){
-            if(str_trim.length()>max.length()){
-                return false;
+            if(str_trim.length()<max.length()){
+                return true;
+            }else if(str_trim.length()==max.length()){
+                return str_trim.compareTo(max)<=0;
             }else{
-                if(str_trim.compareTo(max)>0){
-                    return false;
-                }else{
-                    return true;
-                }
+                return false;
             }
         }else{
             return false;
