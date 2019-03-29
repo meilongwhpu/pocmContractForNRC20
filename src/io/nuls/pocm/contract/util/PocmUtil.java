@@ -111,4 +111,25 @@ public class PocmUtil {
         }
     }
 
+    public static boolean  checkValidity(String str){
+        if(str==null){
+            return false;
+        }
+        String strTmp =str.trim();
+        if(strTmp.length()>0 &&strTmp.length()<21){
+            if(strTmp.endsWith("_")||strTmp.startsWith("_")){
+                return false;
+            }
+            for(int i=0;i<strTmp.length();i++){
+                int chr=strTmp.charAt(i);
+                if(chr<48||(chr>57&&chr<65)||(chr>90&&chr<95)||(chr>95&&chr<97)||chr>122){
+                    return false;
+                }
+            }
+            return true;
+        }else{
+            return false;
+        }
+    }
+
 }
