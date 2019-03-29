@@ -62,6 +62,9 @@ public class PocmToken extends Ownable implements Token{
             receiverTotalAmount =sumAmount(receiverAmount);
             require(initialAmount.compareTo(receiverTotalAmount)>=0,"初始化发放的Token数量不能超过总发行量");
         }
+        require(checkValidity(name.trim()),"Token的名称不符合要求");
+        require(checkValidity(symbol.trim()),"Token的符号不符合要求");
+        require(decimals<19,"Token使用的小数位数不超过18位");
         this.name = name;
         this.symbol = symbol;
         this.decimals = decimals;
