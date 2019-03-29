@@ -96,12 +96,12 @@ public class Pocm extends PocmToken implements Contract {
         int rewardHalvingCycleForInt=0;
         int maximumDepositAddressCountForInt=0;
         if(rewardHalvingCycle!=null&&rewardHalvingCycle.trim().length()>0){
-            require(canConvertNumeric(rewardHalvingCycle.trim()),"奖励减半周期输入不合法，应该输入小于2147483647的数字字符");
+            require(canConvertNumeric(rewardHalvingCycle.trim(),String.valueOf(Integer.MAX_VALUE)),"奖励减半周期输入不合法，应该输入小于2147483647的数字字符");
             rewardHalvingCycleForInt=Integer.parseInt(rewardHalvingCycle.trim());
             require(rewardHalvingCycleForInt>=0,"奖励减半周期应该大于等于0");
         }
         if(maximumDepositAddressCount!=null&&maximumDepositAddressCount.trim().length()>0){
-            require(canConvertNumeric(maximumDepositAddressCount.trim()),"最低抵押数量输入不合法，应该输入小于2147483647的数字字符");
+            require(canConvertNumeric(maximumDepositAddressCount.trim(),String.valueOf(Integer.MAX_VALUE)),"最低抵押数量输入不合法，应该输入小于2147483647的数字字符");
             maximumDepositAddressCountForInt=Integer.parseInt(maximumDepositAddressCount.trim());
             require(maximumDepositAddressCountForInt>=0,"最低抵押数量应该大于等于0");
         }
@@ -228,7 +228,7 @@ public class Pocm extends PocmToken implements Contract {
     public void quit(String number) {
         long depositNumber=0;
         if(number!=null&&number.trim().length()>0){
-            require(canConvertLongNumeric(number.trim()),"抵押编号输入不合法，应该输入数字字符");
+            require(canConvertNumeric(number.trim(),String.valueOf(Long.MAX_VALUE)),"抵押编号输入不合法，应该输入数字字符");
             depositNumber= Long.valueOf(number.trim());
         }
         Address user = Msg.sender();

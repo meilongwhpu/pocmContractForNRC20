@@ -96,14 +96,13 @@ public class PocmUtil {
         return true;
     }
 
-    public static boolean canConvertNumeric(String str){
+    public static boolean canConvertNumeric(String str,String maxValue){
         String str_trim=str.trim();
-        String max=String.valueOf(Integer.MAX_VALUE);
         if(isNumeric(str_trim)){
-            if(str_trim.length()<max.length()){
+            if(str_trim.length()<maxValue.length()){
                 return true;
-            }else if(str_trim.length()==max.length()){
-                return str_trim.compareTo(max)<=0;
+            }else if(str_trim.length()==maxValue.length()){
+                return str_trim.compareTo(maxValue)<=0;
             }else{
                 return false;
             }
@@ -112,21 +111,4 @@ public class PocmUtil {
         }
     }
 
-    public static boolean canConvertLongNumeric(String str){
-        String str_trim=str.trim();
-        String max=String.valueOf(Long.MAX_VALUE);
-        if(isNumeric(str_trim)){
-            if(str_trim.length()>max.length()){
-                return false;
-            }else{
-                if(str_trim.compareTo(max)>0){
-                    return false;
-                }else{
-                    return true;
-                }
-            }
-        }else{
-            return false;
-        }
-    }
 }
