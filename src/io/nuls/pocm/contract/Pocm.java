@@ -332,11 +332,8 @@ public class Pocm extends PocmToken implements Contract {
     @View
     public String currentPrice() {
         long currentHeight = Block.number();
-        BigDecimal currentPrice = this.calcPriceSeed(currentHeight);
-        BigDecimal currentPrice1 = this.calcMiningPrice(currentHeight);
-        long height=currentHeight-this.createHeight;
-        int rewardHalvingRound= Integer.parseInt(String.valueOf(currentHeight-this.createHeight-1))/this.rewardHalvingCycle;
-        return "高度差: "+height+","+ currentPrice.toPlainString() + " " + name() + "/NULS . calcMiningPrice,price="+currentPrice1.toPlainString()+",rewardHalvingRound: "+rewardHalvingRound;
+        BigDecimal currentPrice = this.calcMiningPrice(currentHeight);
+        return  currentPrice.toPlainString() + " " + name() + "/NULS .";
     }
 
     /**
