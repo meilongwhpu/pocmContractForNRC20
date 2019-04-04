@@ -234,10 +234,16 @@ public class Pocm extends PocmToken implements Contract {
         Address user = Msg.sender();
         DepositInfo depositInfo =getDepositInfo(user.toString());
         // 发放奖励
-        MiningInfo miningInfo= receive(depositInfo);
+        this.receive(depositInfo);
         BigInteger deposit=BigInteger.ZERO;
+        MiningInfo miningInfo;
+
         //表示退出全部的抵押
         if(depositNumber==0){
+            miningInfo =mingUsers.get(depositInfo.getDepositorAddress());
+            if(miningInfo==null){
+                miningInfo =new MiningInfo();
+            }
             long result= checkAllDepositLocked(depositInfo);
             require(result == -1, "挖矿的NULS没有全部解锁" );
             deposit=depositInfo.getDepositTotalAmount();
@@ -249,9 +255,9 @@ public class Pocm extends PocmToken implements Contract {
             long unLockedHeight = checkDepositLocked(detailInfo);
             require(unLockedHeight == -1, "挖矿锁定中, 解锁高度是 " + unLockedHeight);
             //删除挖矿信息
-            MiningInfo minginfo =mingUsers.get(detailInfo.getMiningAddress());
-            minginfo.removeMiningDetailInfoByNumber(depositNumber);
-            if(minginfo.getMiningDetailInfos().size()==0){
+            miningInfo =mingUsers.get(detailInfo.getMiningAddress());
+            miningInfo.removeMiningDetailInfoByNumber(depositNumber);
+            if(miningInfo.getMiningDetailInfos().size()==0){
                 mingUsers.remove(detailInfo.getMiningAddress());
             }
             depositInfo.removeDepositDetailInfoByNumber(depositNumber);
@@ -263,10 +269,11 @@ public class Pocm extends PocmToken implements Contract {
         totalDeposit = totalDeposit.subtract(deposit);
         if(depositInfo.getDepositDetailInfos().size()==0){
             totalDepositAddressCount -= 1;
-            //TODO pierre 退出后是否保留该账户的挖矿记录
+            //TODO 退出后是否保留该账户的挖矿记录
             depositUsers.remove(user.toString());
         }
         Msg.sender().transfer(deposit);
+
         emit(new MiningInfoEvent(miningInfo));
     }
 
@@ -275,8 +282,10 @@ public class Pocm extends PocmToken implements Contract {
      */
     public void receiveAwards() {
         Address user = Msg.sender();
+        MiningInfo miningInfo = mingUsers.get(user.toString());
+        require(miningInfo != null, "没有为自己抵押挖矿的挖矿信息");
         DepositInfo depositInfo = getDepositInfo(user.toString());
-        MiningInfo miningInfo= this.receive(depositInfo);
+        this.receive(depositInfo);
         emit(new MiningInfoEvent(miningInfo));
     }
 
@@ -287,7 +296,8 @@ public class Pocm extends PocmToken implements Contract {
     public void receiveAwardsForMiningAddress(){
         List<String> alreadyReceive = new ArrayList<String>();
         Address user = Msg.sender();
-        MiningInfo info =getMiningInfo(user.toString());
+        MiningInfo info = mingUsers.get(user.toString());
+        require(info != null, "没有替"+user.toString()+"用户抵押挖矿的挖矿信息");
         Map<Long,MiningDetailInfo> detailInfos=info.getMiningDetailInfos();
         for (Long key : detailInfos.keySet()) {
             MiningDetailInfo detailInfo = detailInfos.get(key);
@@ -359,7 +369,7 @@ public class Pocm extends PocmToken implements Contract {
      */
     private MiningInfo getMiningInfo(String userStr) {
         MiningInfo miningInfo = mingUsers.get(userStr);
-        require(miningInfo != null, "没有此用户（或为此用户）挖矿的信息");
+        require(miningInfo != null, "没有为此用户挖矿的挖矿信息");
         return miningInfo;
     }
 
@@ -413,7 +423,7 @@ public class Pocm extends PocmToken implements Contract {
      * @param depositInfo
      * @return 返回请求地址的挖矿信息
      */
-    private MiningInfo receive(DepositInfo depositInfo) {
+    private void receive(DepositInfo depositInfo) {
         Map<String,BigInteger> mingResult= new HashMap<String, BigInteger>();
         // 奖励计算, 计算每次挖矿的高度是否已达到奖励减半周期的范围，若达到，则当次奖励减半，以此类推
         BigInteger thisMining = this.calcMining(depositInfo,mingResult);
@@ -427,8 +437,6 @@ public class Pocm extends PocmToken implements Contract {
         }
 
         this.setTotalSupply(this.getTotalSupply().add(thisMining));
-
-        return getMiningInfo(depositInfo.getDepositorAddress());
     }
 
 
