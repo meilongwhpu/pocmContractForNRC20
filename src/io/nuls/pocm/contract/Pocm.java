@@ -51,7 +51,7 @@ public class Pocm extends PocmToken implements Contract {
 
     // 合约创建高度
     private final long createHeight;
-    // 初始价格，每个NULS可挖出XX个token
+    // 初始价格，每个奖励周期所有的抵押平分XX个token
     private BigDecimal initialPrice;
 
     // 奖励发放周期（参数类型为数字，每过XXXX块发放一次）
