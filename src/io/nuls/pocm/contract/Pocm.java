@@ -51,7 +51,7 @@ public class Pocm extends PocmToken implements Contract {
 
     // 合约创建高度
     private final long createHeight;
-    // 初始价格，每个奖励周期所有的抵押平分XX个token
+    // 初始价格，每个奖励周期所有的NULS抵押数平分XX个token
     private BigDecimal initialPrice;
 
     // 奖励发放周期（参数类型为数字，每过XXXX块发放一次）
@@ -365,8 +365,10 @@ public class Pocm extends PocmToken implements Contract {
      */
     @View
     public String currentPrice() {
-        long currentHeight = Block.number();
-        BigDecimal currentPrice = this.calcMiningPrice(currentHeight);
+        RewardCycleInfo cycleInfoTmp=totalDepositList.get(totalDepositList.size()-1);
+        String amount=cycleInfoTmp.getDepositAmount().toString();
+        BigDecimal big_amount=new  BigDecimal(amount);
+        BigDecimal  currentPrice =cycleInfoTmp.getCurrentPrice().divide(big_amount,decimals(),BigDecimal.ROUND_DOWN);
         return  currentPrice.toPlainString() + " " + name() + "/NULS .";
     }
 
@@ -473,7 +475,7 @@ public class Pocm extends PocmToken implements Contract {
         BigInteger mining = BigInteger.ZERO;
         long currentHeight = Block.number();
         this.putDepositToMap(BigInteger.ZERO,currentHeight);
-        BigDecimal currentPrice=this.calcMiningPricePowDecimals(currentHeight);
+        BigDecimal currentPrice=this.calcMiningPrice(currentHeight);
         this.moveDepositToCurrentCycle(currentHeight,currentPrice);
       //  BigDecimal currentPrice = calcMiningPricePowDecimals(currentHeight);
         Map<Long,DepositDetailInfo> detailInfos=depositInfo.getDepositDetailInfos();
@@ -486,7 +488,7 @@ public class Pocm extends PocmToken implements Contract {
             int startCycle= Integer.parseInt(String.valueOf(nextStartMiningHeight-this.createHeight))/this.awardingCycle;
             BigDecimal depositAmountNULS = toNuls(detailInfo.getDepositAmount());
             BigDecimal sumPrice=this.calcPriceBetweenCycle(startCycle);
-            mining_tmp = mining_tmp.add(depositAmountNULS.multiply(sumPrice).toBigInteger());
+            mining_tmp = mining_tmp.add(depositAmountNULS.multiply(sumPrice).scaleByPowerOfTen(decimals()).toBigInteger());
             int roundCount=this.calcRewardCycle(currentHeight);
             nextStartMiningHeight=nextStartMiningHeight+awardingCycle*roundCount;
 
@@ -604,60 +606,13 @@ public class Pocm extends PocmToken implements Contract {
 
     }
 
-
-    /**
-     * 根据当前高度计算对应的单价(该单价乘以了精度值）
-     * @param currentHeight
-     * @return
-     */
-    private BigDecimal calcMiningPricePowDecimals(long currentHeight) {
-        if(this.rewardHalvingCycle==0){
-            return  this.initialPrice.scaleByPowerOfTen(decimals());
-        }
-        //减半周期
-        int rewardHalvingRound= Integer.parseInt(String.valueOf(currentHeight-this.createHeight-1))/this.rewardHalvingCycle;
-        if(rewardHalvingRound==0){
-            return  this.initialPrice.scaleByPowerOfTen(decimals());
-        }else{
-            //当前周期的单价
-            return calcHalvingPricePowDecimals(rewardHalvingRound);
-        }
-    }
-    /**
-     * 计算减半周期的单价(该单价乘以了精度值），,减半周期次数最大允许90次
-     * @param rewardHalvingRound
-     * @return
-     */
-    private BigDecimal calcHalvingPricePowDecimals(int rewardHalvingRound){
-        if(rewardHalvingCycle==0){
-            return this.initialPrice.scaleByPowerOfTen(decimals());
-        }
-        BigDecimal round=BigDecimal.ZERO;
-        int count=rewardHalvingRound/30;
-        BigDecimal base=new BigDecimal(2<<29);
-        if(count==0||rewardHalvingRound==30){
-            round=new BigDecimal(2<<rewardHalvingRound-1);
-        }else if(count==1||rewardHalvingRound==60){
-            round=new BigDecimal(2<<rewardHalvingRound-31);
-            round =base.multiply(round);
-        }else if(count==2||rewardHalvingRound==90){
-            round=new BigDecimal(2<<rewardHalvingRound-61);
-            round =base.multiply(base).multiply(round);
-        }else{
-            require(false, "减半周期次数最大允许90次,目前已经达到"+rewardHalvingRound+"次");
-            return BigDecimal.ZERO;
-        }
-        return this.initialPrice.scaleByPowerOfTen(decimals()).divide(round,decimals(),BigDecimal.ROUND_DOWN);
-
-    }
-
     /**
      * 在加入抵押时将抵押金额加入队列中
      * @param depositValue
      * @param currentHeight
      */
     private void putDepositToMap(BigInteger depositValue,long currentHeight){
-        BigDecimal currentPrice=this.calcMiningPricePowDecimals(currentHeight);
+        BigDecimal currentPrice=this.calcMiningPrice(currentHeight);
         int rewardingCycle= this.calcRewardCycle(currentHeight);
         int rewardHalvingCycle=this.calcRewardHalvingCycle(currentHeight);
         boolean isSame=this.isSameRewardHalvingCycle(currentHeight,lastCalcCycle*this.awardingCycle);
