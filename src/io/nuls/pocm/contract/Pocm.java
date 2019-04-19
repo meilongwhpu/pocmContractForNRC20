@@ -82,6 +82,13 @@ public class Pocm extends PocmToken implements Contract {
     // 总抵押地址数量
     private int totalDepositAddressCount;
 
+    //每个奖励周期的抵押金额索引，k-v：奖励周期-List序号
+    private Map<Integer,Integer> totalDepositIndex = new  LinkedHashMap<Integer,Integer>();
+    //抵押金额列表，与索引表联合使用
+    private List<RewardCycleInfo> totalDepositList = new LinkedList<RewardCycleInfo>();
+    //上一次抵押数量有变动的奖励周期
+    private int lastCalcCycle=0;
+
     private static long NUMBER=1L;
 
 
@@ -174,7 +181,11 @@ public class Pocm extends PocmToken implements Contract {
         info.setDepositorAddress(userStr);
         info.getDepositDetailInfos().put(depositNumber,detailInfo);
         info.setDepositTotalAmount(info.getDepositTotalAmount().add(value));
-        info.setDepositCount(info.getDepositCount()+1); //TODO:是否考虑并发
+        info.setDepositCount(info.getDepositCount()+1);
+
+        //将抵押数加入队列中
+       this.putDepositToMap(value,currentHeight,true);
+
 
         //初始化挖矿信息
         initMingInfo(currentHeight,userStr,userStr,depositNumber);
@@ -214,6 +225,9 @@ public class Pocm extends PocmToken implements Contract {
         info.setDepositTotalAmount(info.getDepositTotalAmount().add(value));
         info.setDepositCount(info.getDepositCount()+1);
 
+        //将抵押数加入队列中
+        this.putDepositToMap(value,currentHeight,true);
+
         //初始化挖矿信息
         initMingInfo(currentHeight,miningAddress.toString(),userStr,depositNumber);
         totalDeposit = totalDeposit.add(value);
@@ -226,6 +240,7 @@ public class Pocm extends PocmToken implements Contract {
      * @return
      */
     public void quit(String number) {
+        long currentHeight =Block.number();
         long depositNumber=0;
         if(number!=null&&number.trim().length()>0){
             require(canConvertNumeric(number.trim(),String.valueOf(Long.MAX_VALUE)),"抵押编号输入不合法，应该输入数字字符");
@@ -247,7 +262,13 @@ public class Pocm extends PocmToken implements Contract {
             long result= checkAllDepositLocked(depositInfo);
             require(result == -1, "挖矿的NULS没有全部解锁" );
             deposit=depositInfo.getDepositTotalAmount();
-            delMingInfo(depositInfo.getDepositDetailInfos());
+            Map<Long,DepositDetailInfo> depositDetailInfos=depositInfo.getDepositDetailInfos();
+            delMingInfo(depositDetailInfos);
+            //从队列中退出抵押金额
+            for(Long key :depositDetailInfos.keySet()){
+                DepositDetailInfo detailInfo=  depositDetailInfos.get(key);
+                this.quitDepositToMap(detailInfo.getDepositAmount(),currentHeight,detailInfo.getDepositHeight());
+            }
             depositInfo.clearDepositDetailInfos();
         }else{
             //退出某一次抵押
@@ -265,8 +286,11 @@ public class Pocm extends PocmToken implements Contract {
             deposit = detailInfo.getDepositAmount();
             depositInfo.setDepositTotalAmount(depositInfo.getDepositTotalAmount().subtract(deposit));
             depositInfo.setDepositCount(depositInfo.getDepositCount()-1);
+            //从队列中退出抵押金额
+            this.quitDepositToMap(deposit,currentHeight,detailInfo.getDepositHeight());
         }
         totalDeposit = totalDeposit.subtract(deposit);
+
         if(depositInfo.getDepositDetailInfos().size()==0){
             totalDepositAddressCount -= 1;
             //TODO 退出后是否保留该账户的挖矿记录
@@ -427,7 +451,6 @@ public class Pocm extends PocmToken implements Contract {
         Map<String,BigInteger> mingResult= new HashMap<String, BigInteger>();
         // 奖励计算, 计算每次挖矿的高度是否已达到奖励减半周期的范围，若达到，则当次奖励减半，以此类推
         BigInteger thisMining = this.calcMining(depositInfo,mingResult);
-
        Set<String> set = new HashSet<String>(mingResult.keySet());
         for(String address:set){
             Address user = new Address(address);
@@ -449,7 +472,8 @@ public class Pocm extends PocmToken implements Contract {
     private BigInteger calcMining(DepositInfo depositInfo,Map<String,BigInteger> mingResult) {
         BigInteger mining = BigInteger.ZERO;
         long currentHeight = Block.number();
-        BigDecimal currentPrice = calcMiningPricePowDecimals(currentHeight);
+        this.putDepositToMap(BigInteger.ZERO,currentHeight,true);
+      //  BigDecimal currentPrice = calcMiningPricePowDecimals(currentHeight);
         Map<Long,DepositDetailInfo> detailInfos=depositInfo.getDepositDetailInfos();
         for (Long key : detailInfos.keySet()) {
             DepositDetailInfo detailInfo = detailInfos.get(key);
@@ -466,7 +490,9 @@ public class Pocm extends PocmToken implements Contract {
                 continue;
             }
             if(this.rewardHalvingCycle==0){
-                mining_tmp = mining_tmp.add(depositAmountNULS.multiply(currentPrice).toBigInteger().multiply(BigInteger.valueOf(awardingRound)));
+                BigDecimal sumPrice=this.calcPriceBetweenCycle(awardingRound);
+                mining_tmp = mining_tmp.add(depositAmountNULS.multiply(sumPrice).toBigInteger());
+              //  mining_tmp = mining_tmp.add(depositAmountNULS.multiply(currentPrice).toBigInteger().multiply(BigInteger.valueOf(awardingRound)));
                 nextStartMiningHeight=nextStartMiningHeight+awardingCycle*awardingRound;
             }else{
                 //上次获取回报时的减半周期数
@@ -475,7 +501,10 @@ public class Pocm extends PocmToken implements Contract {
                 int rewardHalvingRound= Integer.parseInt(String.valueOf(currentHeight-this.createHeight))/this.rewardHalvingCycle;
                 if(rewardHalvingRound==lastRewardHalvingRound){
                     //在同一个减半周期内，说明单价没有减半,先计算每个奖励周期内的奖励数，再乘以奖励周期个数
-                    mining_tmp = mining_tmp.add(depositAmountNULS.multiply(currentPrice).toBigInteger().multiply(BigInteger.valueOf(awardingRound)));
+                    BigDecimal sumPrice=this.calcPriceBetweenCycle(awardingRound);
+                    mining_tmp = mining_tmp.add(depositAmountNULS.multiply(sumPrice).toBigInteger());
+
+                  //  mining_tmp = mining_tmp.add(depositAmountNULS.multiply(currentPrice).toBigInteger().multiply(BigInteger.valueOf(awardingRound)));
                     nextStartMiningHeight=nextStartMiningHeight+awardingCycle*awardingRound;
                 }else{
                     //不在同一个减半周期内，说明单价要减半，减半次数为两数相差
@@ -486,13 +515,17 @@ public class Pocm extends PocmToken implements Contract {
                         nextRewardHalvingHeight=createHeight+this.rewardHalvingCycle*j;
                         int rewardRound= Integer.parseInt(String.valueOf(nextRewardHalvingHeight-nextStartMiningHeight))/this.awardingCycle;
                         if(rewardRound>0){
-                            mining_tmp = mining_tmp.add(depositAmountNULS.multiply(roundPrice).toBigInteger().multiply(BigInteger.valueOf(rewardRound)));
+                            BigDecimal sumPrice=this.calcPriceBetweenCycle(rewardRound);
+                            mining_tmp = mining_tmp.add(depositAmountNULS.multiply(sumPrice).toBigInteger());
+                          //  mining_tmp = mining_tmp.add(depositAmountNULS.multiply(roundPrice).toBigInteger().multiply(BigInteger.valueOf(rewardRound)));
                             nextStartMiningHeight=nextRewardHalvingHeight;
                         }
                     }
                     int rewardRound= Integer.parseInt(String.valueOf(currentHeight-nextStartMiningHeight))/this.awardingCycle;
                     if(rewardRound>0){
-                        mining_tmp = mining_tmp.add(depositAmountNULS.multiply(currentPrice).toBigInteger().multiply(BigInteger.valueOf(rewardRound)));
+                        BigDecimal sumPrice=this.calcPriceBetweenCycle(rewardRound);
+                        mining_tmp = mining_tmp.add(depositAmountNULS.multiply(sumPrice).toBigInteger());
+                       // mining_tmp = mining_tmp.add(depositAmountNULS.multiply(currentPrice).toBigInteger().multiply(BigInteger.valueOf(rewardRound)));
                         nextStartMiningHeight=nextStartMiningHeight+awardingCycle*rewardRound;
                     }
                 }
@@ -611,6 +644,7 @@ public class Pocm extends PocmToken implements Contract {
 
     }
 
+
     /**
      * 根据当前高度计算对应的单价(该单价乘以了精度值）
      * @param currentHeight
@@ -635,6 +669,9 @@ public class Pocm extends PocmToken implements Contract {
      * @return
      */
     private BigDecimal calcHalvingPricePowDecimals(int rewardHalvingRound){
+        if(rewardHalvingCycle==0){
+            return this.initialPrice.scaleByPowerOfTen(decimals());
+        }
         BigDecimal round=BigDecimal.ZERO;
         int count=rewardHalvingRound/30;
         BigDecimal base=new BigDecimal(2<<29);
@@ -652,6 +689,141 @@ public class Pocm extends PocmToken implements Contract {
         }
         return this.initialPrice.scaleByPowerOfTen(decimals()).divide(round,decimals(),BigDecimal.ROUND_DOWN);
 
+    }
+
+    /**
+     * 在加入抵押时将抵押金额加入队列中
+     * @param depositValue
+     * @param currentHeight
+     */
+    private void putDepositToMap(BigInteger depositValue,long currentHeight,boolean isIterator){
+        BigDecimal currentPrice=this.calcMiningPricePowDecimals(currentHeight);
+        int rewardingCycle= this.calcRewardCycle(currentHeight);
+        int rewardHalvingCycle=this.calcRewardHalvingCycle(currentHeight);
+        boolean isSame=this.isSameRewardHalvingCycle(currentHeight,lastCalcCycle*this.awardingCycle);
+        //将减半周期对应高度的抵押总额加入队列
+        if(rewardHalvingCycle>0&&!isSame && isIterator){
+            long  rewardHalvingHeight =rewardHalvingCycle*this.rewardHalvingCycle;
+            this.putDepositToMap(BigInteger.ZERO,rewardHalvingHeight,false);
+        }
+
+       // BigDecimal currentPrice=this.calcHalvingPricePowDecimals(rewardHalvingCycle);
+
+        int alreadTotalDepositIndex=totalDepositIndex.get(rewardingCycle+1);
+        RewardCycleInfo cycleInfo = new RewardCycleInfo();
+        if(alreadTotalDepositIndex==0){
+            if(lastCalcCycle==0){
+                cycleInfo.setDepositAmount(depositValue);
+                cycleInfo.setRewardingCylce(rewardingCycle+1);
+                cycleInfo.setDifferCycleValue(1);
+                cycleInfo.setCurrentPrice(currentPrice);
+                totalDepositList.add(cycleInfo);
+            }else{
+                RewardCycleInfo cycleInfoTmp= totalDepositList.get(totalDepositIndex.get(lastCalcCycle));
+                cycleInfo.setDepositAmount(depositValue.add(cycleInfoTmp.getDepositAmount()));
+                cycleInfo.setRewardingCylce(rewardingCycle+1);
+                cycleInfo.setDifferCycleValue(rewardingCycle-cycleInfoTmp.getRewardingCylce());
+                cycleInfo.setCurrentPrice(currentPrice);
+                totalDepositList.add(cycleInfo);
+            }
+            totalDepositIndex.put(rewardingCycle+1,totalDepositList.size()-1);
+            lastCalcCycle=rewardingCycle+1;
+        }else{
+            RewardCycleInfo cycleInfoTmp= totalDepositList.get(alreadTotalDepositIndex);
+            cycleInfoTmp.setCurrentPrice(currentPrice);
+            cycleInfoTmp.setDepositAmount(depositValue.add(cycleInfoTmp.getDepositAmount()));
+        }
+    }
+
+    /**
+     * 退出抵押时从队列中退出抵押金额
+     * @param depositValue
+     * @param currentHeight
+     * @param depositHeight
+     */
+    private void quitDepositToMap(BigInteger depositValue,long currentHeight ,long depositHeight){
+        int currentCycle= this.calcRewardCycle(currentHeight);
+        int depositCycle=this.calcRewardCycle(depositHeight);
+        if(currentCycle ==depositCycle){
+            //加入抵押和退出抵押在同一个奖励周期
+            RewardCycleInfo cycleInfoTmp= totalDepositList.get(totalDepositIndex.get(currentCycle+1));
+            cycleInfoTmp.setDepositAmount(cycleInfoTmp.getDepositAmount().subtract(depositValue));
+        }else{
+            //加入抵押和退出抵押不在同一个奖励周期
+            RewardCycleInfo cycleInfoTmp= totalDepositList.get(totalDepositIndex.get(currentCycle));
+            cycleInfoTmp.setDepositAmount(cycleInfoTmp.getDepositAmount().subtract(depositValue));
+        }
+    }
+
+    /**
+     * 计算从开始
+     * @param startCycle
+     * @return
+     */
+    private BigDecimal calcPriceBetweenCycle(int startCycle){
+        BigDecimal sumPriceForRegin =BigDecimal.ZERO;
+        int startIndex = totalDepositIndex.get(startCycle);
+        for(int i=startIndex;i<totalDepositList.size();i++){
+            RewardCycleInfo cycleInfoTmp=totalDepositList.get(i);
+            String amount=cycleInfoTmp.getDepositAmount().toString();
+            BigDecimal big_amount=new  BigDecimal(amount);
+            BigDecimal  sumPrice =cycleInfoTmp.getCurrentPrice().divide(big_amount,decimals(),BigDecimal.ROUND_DOWN).multiply(BigDecimal.valueOf(cycleInfoTmp.getDifferCycleValue()));
+            sumPriceForRegin =sumPriceForRegin.add(sumPrice);
+        }
+        return sumPriceForRegin;
+    }
+
+    /**
+     * 计算当前高度的奖励周期
+     * @param currentHeight
+     * @return
+     */
+    private int calcRewardCycle(long currentHeight){
+        return Integer.parseInt(String.valueOf(currentHeight-this.createHeight))/this.awardingCycle;
+    }
+
+    /**
+     * 计算奖励减半周期
+     * @param currentHeight
+     * @return
+     */
+    private int calcRewardHalvingCycle(long currentHeight){
+        int rewardingHalvingCycle=0;
+        if(this.rewardHalvingCycle>0){
+            rewardingHalvingCycle = Integer.parseInt(String.valueOf(currentHeight-this.createHeight))/this.rewardHalvingCycle;
+        }
+        return rewardingHalvingCycle;
+    }
+    /**
+     * 比较当前高度与抵押高度是否在同一个奖励周期内
+     * @param currentHeight
+     * @param depositHeight
+     * @return
+     */
+    private boolean isSameRewardCycle(long currentHeight,long depositHeight){
+        int currentrewardCycle= Integer.parseInt(String.valueOf(currentHeight-this.createHeight))/this.awardingCycle;
+        int depositrewardCycle= Integer.parseInt(String.valueOf(depositHeight-this.createHeight))/this.awardingCycle;
+        if(currentrewardCycle==depositrewardCycle){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    /**
+     * 比较两个高度值是否在同一个减半周期
+     * @param currentHeight
+     * @param lastHeight
+     * @return
+     */
+    private boolean isSameRewardHalvingCycle(long currentHeight,long lastHeight){
+        int currentrewardHalvingCycle= Integer.parseInt(String.valueOf(currentHeight-this.createHeight))/this.rewardHalvingCycle;
+        int lastrewardHalvingCycle= Integer.parseInt(String.valueOf(lastHeight-this.createHeight))/this.rewardHalvingCycle;
+        if(currentrewardHalvingCycle==lastrewardHalvingCycle){
+            return true;
+        }else{
+            return false;
+        }
     }
 
 
