@@ -3,7 +3,11 @@ package io.nuls.pocm.contract.model;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-
+/**
+ * 奖励周期内的抵押信息
+ * @author: Long
+ * @date: 2019-04-19
+ */
 public class RewardCycleInfo {
 
     //奖励周期
