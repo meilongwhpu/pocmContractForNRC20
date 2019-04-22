@@ -497,6 +497,10 @@ public class Pocm extends PocmToken implements Contract {
             MiningInfo miningInfo = getMiningInfo(detailInfo.getMiningAddress());
             MiningDetailInfo mingDetailInfo = miningInfo.getMiningDetailInfoByNumber(detailInfo.getDepositNumber());
             long nextStartMiningHeight = mingDetailInfo.getNextStartMiningHeight();
+            //说明未到领取奖励的高度
+            if(nextStartMiningHeight>currentHeight){
+                continue;
+            }
             int startCycle= this.calcRewardCycle(nextStartMiningHeight);
             int endCycle=this.calcRewardCycle(currentHeight);
             BigDecimal depositAmountNULS = toNuls(detailInfo.getDepositAmount());
