@@ -367,11 +367,20 @@ public class Pocm extends PocmToken implements Contract {
      */
     @View
     public String currentPrice() {
-        RewardCycleInfo cycleInfoTmp=totalDepositList.get(totalDepositList.size()-1);
-        String amount=cycleInfoTmp.getDepositAmount().toString();
-        BigDecimal big_amount=new  BigDecimal(amount);
-        BigDecimal  currentPrice =cycleInfoTmp.getCurrentPrice().divide(big_amount,decimals(),BigDecimal.ROUND_DOWN);
-        return  currentPrice.toPlainString() + " " + name() + "/NULS .";
+        int size=totalDepositList.size();
+        if(size>0){
+            RewardCycleInfo cycleInfoTmp=totalDepositList.get(size-1);
+            String amount=cycleInfoTmp.getDepositAmount().toString();
+            if(amount.equals("0")){
+                return "Unknown";
+            }
+            BigDecimal big_amount=new  BigDecimal(amount);
+            BigDecimal  currentPrice =cycleInfoTmp.getCurrentPrice().divide(big_amount,decimals(),BigDecimal.ROUND_DOWN);
+            return  currentPrice.toPlainString() + " " + name() + "/NULS .";
+        }else{
+            return "Unknown";
+        }
+
     }
 
     /**
@@ -511,25 +520,6 @@ public class Pocm extends PocmToken implements Contract {
 
 
     /**
-     * 计算当前奖励周期的单价
-     * @param currentHeight
-     * @return
-     */
-    private BigDecimal calcPriceSeed(long currentHeight) {
-        BigDecimal currentPrice = this.initialPrice;
-        if(rewardHalvingCycle==0){
-            return currentPrice;
-        }
-        long triggerHeight = this.createHeight + this.rewardHalvingCycle + 1;
-        BigDecimal d = BigDecimal.valueOf(2L);
-        while(triggerHeight <= currentHeight) {
-            currentPrice = currentPrice.divide(d,decimals(),BigDecimal.ROUND_DOWN);
-            triggerHeight += this.rewardHalvingCycle;
-        }
-        return currentPrice;
-    }
-
-    /**
      * 删除挖矿信息
      * @param infos
      */
@@ -616,8 +606,8 @@ public class Pocm extends PocmToken implements Contract {
     private void putDepositToMap(BigInteger depositValue,long currentHeight){
         BigDecimal currentPrice=this.calcMiningPrice(currentHeight);
         int rewardingCycle= this.calcRewardCycle(currentHeight);
-        int rewardHalvingCycle=this.calcRewardHalvingCycle(currentHeight);
-        if(rewardHalvingCycle>0){
+        int rewardHalvingRound=this.calcRewardHalvingCycle(currentHeight);
+        if(rewardHalvingRound>0){
             //将减半周期对应高度的抵押总额加入队列
             boolean isSame=this.isSameRewardHalvingCycle(currentHeight,this.lastCalcHeight);
             if(!isSame){
@@ -626,9 +616,9 @@ public class Pocm extends PocmToken implements Contract {
             }
         }
 
-        int alreadTotalDepositIndex=totalDepositIndex.get(rewardingCycle+1);
+        int alreadyTotalDepositIndex=totalDepositIndex.get(rewardingCycle+1);
         RewardCycleInfo cycleInfo = new RewardCycleInfo();
-        if(alreadTotalDepositIndex==0){
+        if(alreadyTotalDepositIndex==0){
             if(lastCalcCycle==0){
                 cycleInfo.setDepositAmount(depositValue);
                 cycleInfo.setRewardingCylce(rewardingCycle+1);
@@ -636,17 +626,17 @@ public class Pocm extends PocmToken implements Contract {
                 cycleInfo.setCurrentPrice(currentPrice);
                 totalDepositList.add(cycleInfo);
             }else{
-                RewardCycleInfo cycleInfoTmp= totalDepositList.get(totalDepositIndex.get(lastCalcCycle));
-                cycleInfo.setDepositAmount(depositValue.add(cycleInfoTmp.getDepositAmount()));
+                RewardCycleInfo lastCycleInfo= totalDepositList.get(totalDepositIndex.get(lastCalcCycle));
+                cycleInfo.setDepositAmount(depositValue.add(lastCycleInfo.getDepositAmount()));
                 cycleInfo.setRewardingCylce(rewardingCycle+1);
-                cycleInfo.setDifferCycleValue(rewardingCycle-cycleInfoTmp.getRewardingCylce());
+                cycleInfo.setDifferCycleValue(rewardingCycle-lastCycleInfo.getRewardingCylce());
                 cycleInfo.setCurrentPrice(currentPrice);
                 totalDepositList.add(cycleInfo);
             }
             totalDepositIndex.put(rewardingCycle+1,totalDepositList.size()-1);
             lastCalcCycle=rewardingCycle+1;
         }else{
-            RewardCycleInfo cycleInfoTmp= totalDepositList.get(alreadTotalDepositIndex);
+            RewardCycleInfo cycleInfoTmp= totalDepositList.get(alreadyTotalDepositIndex);
             cycleInfoTmp.setCurrentPrice(currentPrice);
             cycleInfoTmp.setDepositAmount(depositValue.add(cycleInfoTmp.getDepositAmount()));
         }
@@ -737,11 +727,11 @@ public class Pocm extends PocmToken implements Contract {
      * @return
      */
     private int calcRewardHalvingCycle(long currentHeight){
-        int rewardingHalvingCycle=0;
+        int halvingCycle=0;
         if(this.rewardHalvingCycle>0){
-            rewardingHalvingCycle = Integer.parseInt(String.valueOf(currentHeight-this.createHeight))/this.rewardHalvingCycle;
+            halvingCycle = Integer.parseInt(String.valueOf(currentHeight-this.createHeight))/this.rewardHalvingCycle;
         }
-        return rewardingHalvingCycle;
+        return halvingCycle;
     }
 
     /**
@@ -751,13 +741,18 @@ public class Pocm extends PocmToken implements Contract {
      * @return
      */
     private boolean isSameRewardHalvingCycle(long currentHeight,long lastHeight){
-        int currentrewardHalvingCycle= Integer.parseInt(String.valueOf(currentHeight-this.createHeight))/this.rewardHalvingCycle;
-        int lastrewardHalvingCycle= Integer.parseInt(String.valueOf(lastHeight-this.createHeight))/this.rewardHalvingCycle;
-        if(currentrewardHalvingCycle==lastrewardHalvingCycle){
-            return true;
+        if(this.rewardHalvingCycle>0){
+            int currentrewardHalvingCycle= Integer.parseInt(String.valueOf(currentHeight-this.createHeight))/this.rewardHalvingCycle;
+            int lastrewardHalvingCycle= Integer.parseInt(String.valueOf(lastHeight-this.createHeight))/this.rewardHalvingCycle;
+            if(currentrewardHalvingCycle==lastrewardHalvingCycle){
+                return true;
+            }else{
+                return false;
+            }
         }else{
-            return false;
+            return true;
         }
+
     }
 
 
@@ -766,7 +761,7 @@ public class Pocm extends PocmToken implements Contract {
      */
     @View
     public String initialPrice() {
-        return initialPrice.toPlainString() + " " + name() + "/NULS";
+        return initialPrice.toPlainString() + " " + name() + "/ x NULS";
     }
 
     @View
