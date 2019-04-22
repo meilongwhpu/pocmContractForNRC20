@@ -503,7 +503,7 @@ public class Pocm extends PocmToken implements Contract {
             BigDecimal sumPrice=this.calcPriceBetweenCycle(startCycle);
             mining_tmp = mining_tmp.add(depositAmountNULS.multiply(sumPrice).scaleByPowerOfTen(decimals()).toBigInteger());
             int roundCount=endCycle-startCycle+1;
-            nextStartMiningHeight=nextStartMiningHeight+this.awardingCycle*(roundCount+1);
+            nextStartMiningHeight=nextStartMiningHeight+this.awardingCycle*roundCount;
 
             mingDetailInfo.setMiningAmount(mingDetailInfo.getMiningAmount().add(mining_tmp));
             mingDetailInfo.setMiningCount(mingDetailInfo.getMiningCount()+roundCount);
@@ -692,14 +692,35 @@ public class Pocm extends PocmToken implements Contract {
         int currentCycle= this.calcRewardCycle(currentHeight);
         int depositCycle=this.calcRewardCycle(depositHeight);
         if(currentCycle ==depositCycle){
-            //加入抵押和退出抵押在同一个奖励周期
+            //加入抵押和退出抵押在同一个奖励周期，更新下一个奖励周期的总抵押数
             RewardCycleInfo cycleInfoTmp= totalDepositList.get(totalDepositIndex.get(currentCycle+1));
             cycleInfoTmp.setDepositAmount(cycleInfoTmp.getDepositAmount().subtract(depositValue));
         }else{
-            //加入抵押和退出抵押不在同一个奖励周期
-            RewardCycleInfo cycleInfoTmp= totalDepositList.get(totalDepositIndex.get(currentCycle));
-            cycleInfoTmp.setDepositAmount(cycleInfoTmp.getDepositAmount().subtract(depositValue));
+            //加入抵押和退出抵押不在同一个奖励周期,则更新当前奖励周期的总抵押数
+            boolean isContainsKey = totalDepositIndex.containsKey(currentCycle);
+            //待操作的奖励周期已经计算了总抵押数
+            if(isContainsKey){
+                RewardCycleInfo cycleInfoTmp= totalDepositList.get(totalDepositIndex.get(currentCycle));
+                cycleInfoTmp.setDepositAmount(cycleInfoTmp.getDepositAmount().subtract(depositValue));
+            }else{
+                RewardCycleInfo cycleInfo = new RewardCycleInfo();
+                //取队列中最后一个奖励周期的信息
+                RewardCycleInfo cycleInfoTmp= totalDepositList.get(totalDepositList.size()-1);
+                cycleInfo.setDepositAmount(cycleInfoTmp.getDepositAmount().subtract(depositValue));
+                cycleInfo.setDifferCycleValue(currentCycle-cycleInfoTmp.getRewardingCylce());
+                BigDecimal currentPrice=this.calcMiningPrice(currentHeight);
+                cycleInfo.setCurrentPrice(currentPrice);
+                cycleInfo.setRewardingCylce(currentCycle);
+                totalDepositList.add(cycleInfo);
+
+                totalDepositIndex.put(currentCycle,totalDepositList.size()-1);
+                lastCalcCycle=currentCycle;
+                this.lastCalcHeight=currentCycle*this.awardingCycle+this.createHeight;
+            }
         }
+
+
+
     }
 
     /**
