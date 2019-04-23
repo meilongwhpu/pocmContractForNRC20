@@ -252,7 +252,7 @@ public class Pocm extends PocmToken implements Contract {
         DepositInfo depositInfo =getDepositInfo(user.toString());
         // 发放奖励
         this.receive(depositInfo);
-        BigInteger deposit=BigInteger.ZERO;
+        BigInteger deposit;
         MiningInfo miningInfo;
 
         //表示退出全部的抵押
@@ -485,6 +485,7 @@ public class Pocm extends PocmToken implements Contract {
     private BigInteger calcMining(DepositInfo depositInfo,Map<String,BigInteger> mingResult) {
         BigInteger mining = BigInteger.ZERO;
         long currentHeight = Block.number();
+        int currentRewardCycle= this.calcRewardCycle(currentHeight);
         //将上一个奖励周期的总抵押数更新至当前奖励周期的总抵押数
         this.putDepositToMap(BigInteger.ZERO,currentHeight,true);
         //计算从上次统计抵押时的高度到当前高度，所有的减半周期高度对于的奖励高度加入队列
@@ -496,22 +497,18 @@ public class Pocm extends PocmToken implements Contract {
             BigInteger mining_tmp=BigInteger.ZERO;
             MiningInfo miningInfo = getMiningInfo(detailInfo.getMiningAddress());
             MiningDetailInfo mingDetailInfo = miningInfo.getMiningDetailInfoByNumber(detailInfo.getDepositNumber());
-            long nextStartMiningHeight = mingDetailInfo.getNextStartMiningHeight();
+            int nextStartMiningCycle= mingDetailInfo.getNextStartMiningCycle();
             //说明未到领取奖励的高度
-            if(nextStartMiningHeight>currentHeight){
+            if(nextStartMiningCycle>currentRewardCycle){
                 continue;
             }
-            int startCycle= this.calcRewardCycle(nextStartMiningHeight);
-            int endCycle=this.calcRewardCycle(currentHeight);
+            BigDecimal sumPrice=this.calcPriceBetweenCycle(nextStartMiningCycle);
             BigDecimal depositAmountNULS = toNuls(detailInfo.getDepositAmount());
-            BigDecimal sumPrice=this.calcPriceBetweenCycle(startCycle);
             mining_tmp = mining_tmp.add(depositAmountNULS.multiply(sumPrice).scaleByPowerOfTen(decimals()).toBigInteger());
-            int roundCount=endCycle-startCycle+1;
-            nextStartMiningHeight=nextStartMiningHeight+this.awardingCycle*roundCount;
 
             mingDetailInfo.setMiningAmount(mingDetailInfo.getMiningAmount().add(mining_tmp));
-            mingDetailInfo.setMiningCount(mingDetailInfo.getMiningCount()+roundCount);
-            mingDetailInfo.setNextStartMiningHeight(nextStartMiningHeight);
+            mingDetailInfo.setMiningCount(mingDetailInfo.getMiningCount()+currentRewardCycle-nextStartMiningCycle+1);
+            mingDetailInfo.setNextStartMiningCycle(currentRewardCycle+1);
             miningInfo.setTotalMining(miningInfo.getTotalMining().add(mining_tmp));
             miningInfo.setReceivedMining(miningInfo.getReceivedMining().add(mining_tmp));
 
@@ -549,7 +546,8 @@ public class Pocm extends PocmToken implements Contract {
      */
     private void initMingInfo(long currentHeight,String miningAddress ,String depositorAddress,long depositNumber ){
         MiningDetailInfo mingDetailInfo = new MiningDetailInfo(miningAddress,depositorAddress,depositNumber);
-        mingDetailInfo.setNextStartMiningHeight(currentHeight+this.awardingCycle);
+        int currentRewardCycle =this.calcRewardCycle(currentHeight);
+        mingDetailInfo.setNextStartMiningCycle(currentRewardCycle+2);
         MiningInfo mingInfo =  mingUsers.get(miningAddress);
         if(mingInfo==null){//该Token地址为第一次挖矿
             mingInfo =  new MiningInfo();
@@ -617,9 +615,9 @@ public class Pocm extends PocmToken implements Contract {
         //计算从上次统计抵押时的高度到当前高度，所有的减半周期高度对于的奖励高度加入队列
         this.moveLastDepositToHalvingCycle(currentHeight);
         if(!isCurrentCycle){
-            putCycle =currentCycle+1;
+            putCycle =currentCycle+2;
         }else{
-            putCycle =currentCycle;
+            putCycle =currentCycle+1;
         }
         boolean isContainsKey = totalDepositIndex.containsKey(putCycle);
         RewardCycleInfo cycleInfo = new RewardCycleInfo();
@@ -751,7 +749,7 @@ public class Pocm extends PocmToken implements Contract {
     }
 
     /**
-     * 计算当前高度的奖励周期
+     * 计算当前高度所在的奖励周期
      * @param currentHeight
      * @return
      */
@@ -801,6 +799,15 @@ public class Pocm extends PocmToken implements Contract {
     @View
     public long createHeight() {
         return createHeight;
+    }
+
+    /**
+     * 当前奖励周期
+     * @return
+     */
+    @View
+    public long currentRewardCycle() {
+        return this.calcRewardCycle(Block.number());
     }
 
     @View
