@@ -52,4 +52,10 @@ public class RewardCycleInfo {
     public void setCurrentPrice(BigDecimal currentPrice) {
         this.currentPrice = currentPrice;
     }
+
+    @Override
+    public String toString(){
+        return "{rewardingCylce:"+rewardingCylce+",currentPrice:"+currentPrice.toString()+",depositAmount:"+depositAmount
+                +",differCycleValue:"+differCycleValue+"}";
+    }
 }
