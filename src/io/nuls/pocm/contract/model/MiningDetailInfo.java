@@ -19,8 +19,8 @@ public class MiningDetailInfo {
     // 挖矿次数
     private int miningCount;
 
-    // 下次挖矿的奖励周期
-    private int nextStartMiningCycle;
+    // 下次挖矿的开始高度
+    private long nextStartMiningHeight= 0L;
 
     //来源地址
     private String depositorAddress;
@@ -64,12 +64,12 @@ public class MiningDetailInfo {
         this.miningCount = miningCount;
     }
 
-    public int getNextStartMiningCycle() {
-        return nextStartMiningCycle;
+    public long getNextStartMiningHeight() {
+        return nextStartMiningHeight;
     }
 
-    public void setNextStartMiningCycle(int nextStartMiningCycle) {
-        this.nextStartMiningCycle = nextStartMiningCycle;
+    public void setNextStartMiningHeight(long nextStartMiningHeight) {
+        this.nextStartMiningHeight = nextStartMiningHeight;
     }
 
     public long getDepositNumber() {
@@ -83,7 +83,7 @@ public class MiningDetailInfo {
     @Override
     public String toString(){
         return "{depositNumber:"+depositNumber+",miningAmount:"+miningAmount.toString()+",receiverMiningAddress:"+receiverMiningAddress
-                +",miningCount:"+miningCount+",nextStartMiningCycle:"+nextStartMiningCycle+",depositorAddress:"+depositorAddress+"}";
+                +",miningCount:"+miningCount+",nextStartMiningHeight:"+nextStartMiningHeight+",depositorAddress:"+depositorAddress+"}";
     }
 
 
