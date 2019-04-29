@@ -7,7 +7,6 @@ import java.math.BigInteger;
  * @date: 2019-03-15
  */
 public class MiningDetailInfo {
-
     //对应的抵押编号
     private long depositNumber;
     // 挖矿金额
