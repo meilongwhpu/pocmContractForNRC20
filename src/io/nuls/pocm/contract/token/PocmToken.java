@@ -23,7 +23,7 @@ public class PocmToken extends Ownable implements Token{
     private final String name;
     private final String symbol;
     private final int decimals;
-    private BigInteger totalSupply = BigInteger.ZERO;
+    private BigInteger totalSupply;
 
     private Map<Address, BigInteger> balances = new HashMap<Address, BigInteger>();
     private Map<Address, Map<Address, BigInteger>> allowed = new HashMap<Address, Map<Address, BigInteger>>();
