@@ -74,9 +74,6 @@ public class Pocm extends PocmToken implements Contract {
     // 用户挖矿信息(key为接收挖矿Token地址）
     private Map<String, MiningInfo> mingUsers = new HashMap<String, MiningInfo>();
 
-    //历史挖矿信息，暂未使用
-    private Map<String, MiningInfo> mingUserHis=  new HashMap<String, MiningInfo>();
-
     // 总抵押金额
     private BigInteger totalDeposit;
     // 总抵押地址数量
