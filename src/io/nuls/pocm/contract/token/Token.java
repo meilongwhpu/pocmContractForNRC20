@@ -73,13 +73,21 @@ public interface Token {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
 
             TransferEvent that = (TransferEvent) o;
 
-            if (from != null ? !from.equals(that.from) : that.from != null) return false;
-            if (to != null ? !to.equals(that.to) : that.to != null) return false;
+            if (from != null ? !from.equals(that.from) : that.from != null) {
+                return false;
+            }
+            if (to != null ? !to.equals(that.to) : that.to != null) {
+                return false;
+            }
             return value != null ? value.equals(that.value) : that.value == null;
         }
 
@@ -142,13 +150,21 @@ public interface Token {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
 
             ApprovalEvent that = (ApprovalEvent) o;
 
-            if (owner != null ? !owner.equals(that.owner) : that.owner != null) return false;
-            if (spender != null ? !spender.equals(that.spender) : that.spender != null) return false;
+            if (owner != null ? !owner.equals(that.owner) : that.owner != null) {
+                return false;
+            }
+            if (spender != null ? !spender.equals(that.spender) : that.spender != null) {
+                return false;
+            }
             return value != null ? value.equals(that.value) : that.value == null;
         }
 

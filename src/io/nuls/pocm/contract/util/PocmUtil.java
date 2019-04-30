@@ -90,19 +90,21 @@ public class PocmUtil {
     private static boolean isNumeric(String str){
         for(int i=0;i<str.length();i++){
             int chr=str.charAt(i);
-            if(chr<48||chr>57)
+            if(chr<48||chr>57){
                 return false;
+            }
+
         }
         return true;
     }
 
     public static boolean canConvertNumeric(String str,String maxValue){
-        String str_trim=str.trim();
-        if(isNumeric(str_trim)){
-            if(str_trim.length()<maxValue.length()){
+        String trimStr=str.trim();
+        if(isNumeric(trimStr)){
+            if(trimStr.length()<maxValue.length()){
                 return true;
-            }else if(str_trim.length()==maxValue.length()){
-                return str_trim.compareTo(maxValue)<=0;
+            }else if(trimStr.length()==maxValue.length()){
+                return trimStr.compareTo(maxValue)<=0;
             }else{
                 return false;
             }

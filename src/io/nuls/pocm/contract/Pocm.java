@@ -176,7 +176,7 @@ public class Pocm extends PocmToken implements Contract {
         BigInteger value = Msg.value();
         long currentHeight =Block.number();
         require(value.compareTo(minimumDeposit) >= 0, "未达到最低抵押值:"+minimumDeposit);
-        long depositNumber =NUMBER++; //抵押编号要优化，可能同一个区块多个抵押
+        long depositNumber =NUMBER++;
 
         DepositDetailInfo detailInfo = new DepositDetailInfo();
         detailInfo.setDepositAmount(value);
@@ -373,13 +373,13 @@ public class Pocm extends PocmToken implements Contract {
         int size=totalDepositList.size();
         if(size>0){
             RewardCycleInfo cycleInfoTmp=totalDepositList.get(size-1);
-            BigInteger int_amount=cycleInfoTmp.getDepositAmount();
-            if(int_amount.compareTo(BigInteger.ZERO)==0){
+            BigInteger intAmount=cycleInfoTmp.getDepositAmount();
+            if(intAmount.compareTo(BigInteger.ZERO)==0){
                 return "Unknown";
             }
-            String amount=toNuls(int_amount).toString();
-            BigDecimal big_amount=new  BigDecimal(amount);
-            BigDecimal  currentPrice =cycleInfoTmp.getCurrentPrice().divide(big_amount,decimals(),BigDecimal.ROUND_DOWN);
+            String amount=toNuls(intAmount).toString();
+            BigDecimal bigAmount=new  BigDecimal(amount);
+            BigDecimal  currentPrice =cycleInfoTmp.getCurrentPrice().divide(bigAmount,decimals(),BigDecimal.ROUND_DOWN);
             return  currentPrice.toPlainString() + " " + name() + "/NULS .";
         }else{
             return "Unknown";
@@ -496,7 +496,7 @@ public class Pocm extends PocmToken implements Contract {
         Map<Long,DepositDetailInfo> detailInfos=depositInfo.getDepositDetailInfos();
         for (Long key : detailInfos.keySet()) {
             DepositDetailInfo detailInfo = detailInfos.get(key);
-            BigInteger mining_tmp=BigInteger.ZERO;
+            BigInteger miningTmp=BigInteger.ZERO;
             MiningInfo miningInfo = getMiningInfo(detailInfo.getMiningAddress());
             MiningDetailInfo mingDetailInfo = miningInfo.getMiningDetailInfoByNumber(detailInfo.getDepositNumber());
             int nextStartMiningCycle= mingDetailInfo.getNextStartMiningCycle();
@@ -506,21 +506,20 @@ public class Pocm extends PocmToken implements Contract {
             }
             BigDecimal sumPrice=this.calcPriceBetweenCycle(nextStartMiningCycle);
             BigDecimal depositAmountNULS = toNuls(detailInfo.getDepositAmount());
-            mining_tmp = mining_tmp.add(depositAmountNULS.multiply(sumPrice).scaleByPowerOfTen(decimals()).toBigInteger());
+            miningTmp = miningTmp.add(depositAmountNULS.multiply(sumPrice).scaleByPowerOfTen(decimals()).toBigInteger());
 
-            mingDetailInfo.setMiningAmount(mingDetailInfo.getMiningAmount().add(mining_tmp));
+            mingDetailInfo.setMiningAmount(mingDetailInfo.getMiningAmount().add(miningTmp));
             mingDetailInfo.setMiningCount(mingDetailInfo.getMiningCount()+currentRewardCycle-nextStartMiningCycle+1);
             mingDetailInfo.setNextStartMiningCycle(currentRewardCycle+1);
-            miningInfo.setTotalMining(miningInfo.getTotalMining().add(mining_tmp));
-            miningInfo.setReceivedMining(miningInfo.getReceivedMining().add(mining_tmp));
+            miningInfo.setTotalMining(miningInfo.getTotalMining().add(miningTmp));
+            miningInfo.setReceivedMining(miningInfo.getReceivedMining().add(miningTmp));
 
             if(mingResult.containsKey(mingDetailInfo.getReceiverMiningAddress())){
-                mining_tmp=mingResult.get(mingDetailInfo.getReceiverMiningAddress()).add(mining_tmp);
+                miningTmp=mingResult.get(mingDetailInfo.getReceiverMiningAddress()).add(miningTmp);
             }
-            mingResult.put(mingDetailInfo.getReceiverMiningAddress(),mining_tmp);
-            mining = mining.add(mining_tmp);
+            mingResult.put(mingDetailInfo.getReceiverMiningAddress(),miningTmp);
+            mining = mining.add(miningTmp);
         }
-        // this.moveLastDepositToCurrentCycle(currentHeight+this.awardingCycle);
         return mining;
     }
 
@@ -552,7 +551,8 @@ public class Pocm extends PocmToken implements Contract {
         int currentRewardCycle =this.calcRewardCycle(currentHeight);
         mingDetailInfo.setNextStartMiningCycle(currentRewardCycle+2);
         MiningInfo mingInfo =  mingUsers.get(miningAddress);
-        if(mingInfo==null){//该Token地址为第一次挖矿
+        //该Token地址为第一次挖矿
+        if(mingInfo==null){
             mingInfo =  new MiningInfo();
             mingInfo.getMiningDetailInfos().put(depositNumber,mingDetailInfo);
             mingUsers.put(miningAddress,mingInfo);
@@ -737,9 +737,9 @@ public class Pocm extends PocmToken implements Contract {
         for(int i=startIndex;i<totalDepositList.size();i++){
             RewardCycleInfo cycleInfoTmp=totalDepositList.get(i);
             String amount=toNuls(cycleInfoTmp.getDepositAmount()).toString();
-            if(!amount.equals("0")){
-                BigDecimal big_amount=new  BigDecimal(amount);
-                sumPrice =cycleInfoTmp.getCurrentPrice().divide(big_amount,decimals(),BigDecimal.ROUND_DOWN).multiply(BigDecimal.valueOf(cycleInfoTmp.getDifferCycleValue()));
+            if(!"0".equals(amount)){
+                BigDecimal bigAmount=new  BigDecimal(amount);
+                sumPrice =cycleInfoTmp.getCurrentPrice().divide(bigAmount,decimals(),BigDecimal.ROUND_DOWN).multiply(BigDecimal.valueOf(cycleInfoTmp.getDifferCycleValue()));
             }
             sumPriceForRegin =sumPriceForRegin.add(sumPrice);
         }
@@ -770,14 +770,13 @@ public class Pocm extends PocmToken implements Contract {
 
     @View
     public String getTotalDepositList(){
-        String depositinfo ="{";
-        String temp="";
+        StringBuffer detailTnfoStr = new StringBuffer("{");
         for(int i=0;i<totalDepositList.size();i++){
             RewardCycleInfo info = totalDepositList.get(i);
-            depositinfo=depositinfo+info.toString()+",";
+            detailTnfoStr.append(info.toString()).append(",");
         }
-        depositinfo=depositinfo.substring(0,depositinfo.length()-1)+"}";
-        return depositinfo;
+        detailTnfoStr.deleteCharAt(detailTnfoStr.length()-1).append("}");
+        return detailTnfoStr.toString();
     }
 
     /**

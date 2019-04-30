@@ -93,13 +93,19 @@ public class Ownable {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o){
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()){
+                return false;
+            }
 
             OwnershipTransferredEvent that = (OwnershipTransferredEvent) o;
 
-            if (previousOwner != null ? !previousOwner.equals(that.previousOwner) : that.previousOwner != null)
+            if (previousOwner != null ? !previousOwner.equals(that.previousOwner) : that.previousOwner != null){
                 return false;
+            }
+
             return newOwner != null ? newOwner.equals(that.newOwner) : that.newOwner == null;
         }
 
@@ -143,8 +149,12 @@ public class Ownable {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o){
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
 
             OwnershipRenouncedEvent that = (OwnershipRenouncedEvent) o;
 

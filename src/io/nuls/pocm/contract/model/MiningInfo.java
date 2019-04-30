@@ -36,12 +36,19 @@ import static io.nuls.contract.sdk.Utils.require;
  */
 public class MiningInfo {
 
-    // 总挖矿金额
+    /**
+     * 总挖矿金额
+     */
     private BigInteger totalMining;
-    // 已领取挖矿金额
+
+    /**
+     * 已领取挖矿金额
+     */
     private BigInteger receivedMining;
 
-    //挖矿明细
+    /**
+     * 挖矿明细
+     */
     private Map<Long,MiningDetailInfo> miningDetailInfos =new HashMap<Long,MiningDetailInfo>();
 
     public MiningInfo() {
@@ -100,16 +107,16 @@ public class MiningInfo {
                 +",miningDetailInfo:"+this.convertMapToString()+"}";
     }
 
-    private String convertMapToString(){
-        String detailinfo ="{";
-        String temp="";
+
+
+    private  String convertMapToString(){
+        StringBuffer detailTnfoStr = new StringBuffer("{");
         for (Long key : miningDetailInfos.keySet()) {
             MiningDetailInfo detailInfo=  miningDetailInfos.get(key);
-            temp =detailInfo.toString();
-            detailinfo=detailinfo+temp+",";
+            detailTnfoStr.append(detailInfo.toString()).append(",");
         }
-        detailinfo=detailinfo.substring(0,detailinfo.length()-1)+"}";
-        return detailinfo;
+        detailTnfoStr.deleteCharAt(detailTnfoStr.length()-1).append("}");
+        return detailTnfoStr.toString();
     }
 
 }

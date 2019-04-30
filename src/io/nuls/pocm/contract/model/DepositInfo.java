@@ -22,7 +22,9 @@ public class DepositInfo {
     //抵押笔数
     private int depositCount;
 
-    //抵押详细信息列表
+    /**
+     * 抵押详细信息列表
+     */
     private Map<Long,DepositDetailInfo> depositDetailInfos =new HashMap<Long,DepositDetailInfo>();
 
     public DepositInfo(){
@@ -99,19 +101,17 @@ public class DepositInfo {
     @Override
     public String toString(){
         return  "{depositTotalAmount:"+depositTotalAmount+",depositorAddress:"+depositorAddress
-                +",depositCount:"+depositCount+",depositDetailInfos:"+convertMapToString()+"}}";
+                +",depositCount:"+depositCount+",depositDetailInfos:"+convertMapToString()+"}";
     }
 
     private  String convertMapToString(){
-        String detailinfo ="{";
-        String temp="";
+        StringBuffer detailTnfoStr = new StringBuffer("{");
         for (Long key : depositDetailInfos.keySet()) {
             DepositDetailInfo detailInfo=  depositDetailInfos.get(key);
-            temp =detailInfo.toString();
-            detailinfo=detailinfo+temp+",";
+            detailTnfoStr.append(detailInfo.toString()).append(",");
         }
-        detailinfo=detailinfo.substring(0,detailinfo.length()-1);
-        detailinfo=detailinfo+"}";
-        return detailinfo;
+        detailTnfoStr.deleteCharAt(detailTnfoStr.length()-1).append("}");
+        return detailTnfoStr.toString();
     }
+
 }
