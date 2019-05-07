@@ -770,13 +770,14 @@ public class Pocm extends PocmToken implements Contract {
 
     @View
     public String getTotalDepositList(){
-        StringBuffer detailTnfoStr = new StringBuffer("{");
+        String depositinfo ="{";
+        String temp="";
         for(int i=0;i<totalDepositList.size();i++){
             RewardCycleInfo info = totalDepositList.get(i);
-            detailTnfoStr.append(info.toString()).append(",");
+            depositinfo=depositinfo+info.toString()+",";
         }
-        detailTnfoStr.deleteCharAt(detailTnfoStr.length()-1).append("}");
-        return detailTnfoStr.toString();
+        depositinfo=depositinfo.substring(0,depositinfo.length()-1)+"}";
+        return depositinfo;
     }
 
     /**

@@ -105,13 +105,17 @@ public class DepositInfo {
     }
 
     private  String convertMapToString(){
-        StringBuffer detailTnfoStr = new StringBuffer("{");
+        String detailinfo ="{";
+        String temp="";
         for (Long key : depositDetailInfos.keySet()) {
             DepositDetailInfo detailInfo=  depositDetailInfos.get(key);
-            detailTnfoStr.append(detailInfo.toString()).append(",");
+            temp =detailInfo.toString();
+            detailinfo=detailinfo+temp+",";
         }
-        detailTnfoStr.deleteCharAt(detailTnfoStr.length()-1).append("}");
-        return detailTnfoStr.toString();
+        detailinfo=detailinfo.substring(0,detailinfo.length()-1);
+        detailinfo=detailinfo+"}";
+
+        return detailinfo;
     }
 
 }

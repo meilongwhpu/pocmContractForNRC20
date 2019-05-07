@@ -107,16 +107,16 @@ public class MiningInfo {
                 +",miningDetailInfo:"+this.convertMapToString()+"}";
     }
 
-
-
     private  String convertMapToString(){
-        StringBuffer detailTnfoStr = new StringBuffer("{");
+        String detailinfo ="{";
+        String temp="";
         for (Long key : miningDetailInfos.keySet()) {
             MiningDetailInfo detailInfo=  miningDetailInfos.get(key);
-            detailTnfoStr.append(detailInfo.toString()).append(",");
+            temp =detailInfo.toString();
+            detailinfo=detailinfo+temp+",";
         }
-        detailTnfoStr.deleteCharAt(detailTnfoStr.length()-1).append("}");
-        return detailTnfoStr.toString();
+        detailinfo=detailinfo.substring(0,detailinfo.length()-1)+"}";
+        return detailinfo;
     }
 
 }
