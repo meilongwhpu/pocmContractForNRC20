@@ -7,6 +7,9 @@ import io.nuls.contract.sdk.annotation.View;
 
 import java.math.BigInteger;
 
+/**
+ * @author Long
+ */
 public interface Token {
 
     @View

@@ -17,33 +17,33 @@ import static io.nuls.contract.sdk.Utils.require;
 public class DepositService {
 
     /**
-     * 最短锁定区块（参数类型为数字，XXXXX块后才可退出抵押）
+     * Minimum locking height (parameter type is digital, XX height can be withdrawn from mortgage)
      */
     private int minimumLocked;
 
     /**
-     * 最低抵押na数量(1亿个na等于1个NULS）
+     * Number of minimum mortgage Na (100 million Na equals 1 NULS)
      */
     private BigInteger minimumDeposit;
 
     /**
-     * 最大抵押地址数量（可选参数）
+     * the maximum number of mortgage addresses
      */
     private int maximumDepositAddressCount;
 
     /**
-     * 用户抵押信息(key为抵押者地址）
+     * User Mortgage Information (key is the mortgagor's address)
      */
     private Map<String, DepositInfo> depositUsers = new HashMap<String, DepositInfo>();
 
 
     /**
-     * 总抵押地址数量
+     * Number of mortgages
      */
     private int totalDepositAddressCount = 0;
 
     /**
-     * 总抵押金额
+     * Total Mortgage Amount
      */
     private BigInteger totalDeposit = BigInteger.ZERO;
 
@@ -62,6 +62,16 @@ public class DepositService {
         return depositUsers.get(userAddress);
     }
 
+    /**
+     * Adding Mortgage Information to Mortgage Queue (depositUsers)
+     *
+     * @param depositAddress Mortgage address
+     * @param miningAddress  Receiving Token Address
+     * @param depositValue   Amount of mortgage
+     * @param currentHeight  Current height
+     * @param depositNumber  Mortgage number
+     * @return Mortgage information
+     */
     public DepositInfo addDeposit(String depositAddress, String miningAddress, BigInteger depositValue, long currentHeight, long depositNumber) {
         require(depositValue.compareTo(minimumDeposit) >= 0, "未达到最低抵押值:" + minimumDeposit);
         DepositInfo info = depositUsers.get(depositAddress);
@@ -93,10 +103,10 @@ public class DepositService {
     }
 
     /**
-     * 检查抵押是否在锁定中
+     * Check if all mortgages of the user are locked
      *
-     * @param depositInfo
-     * @return
+     * @param depositInfo Mortgage information
+     * @return -1:locking
      */
     public long checkAllDepositLocked(DepositInfo depositInfo) {
         long result;
@@ -111,26 +121,26 @@ public class DepositService {
     }
 
     /**
-     * 检查抵押是否在锁定中
+     * Check if the mortgage is locked
      *
-     * @param detailInfo
-     * @return
+     * @param detailInfo Mortgage detail information
+     * @return -1:locking
      */
     public long checkDepositLocked(DepositDetailInfo detailInfo) {
         long currentHeight = Block.number();
         long unLockedHeight = detailInfo.getDepositHeight() + minimumLocked + 1;
         if (unLockedHeight > currentHeight) {
-            // 锁定中
+            // locking
             return unLockedHeight;
         }
-        //已解锁
+        //unlocked
         return -1;
     }
 
     /**
-     * 清楚抵押信息中的详细抵押信息
+     * clear detailed mortgage information from mortgage information
      *
-     * @param info
+     * @param info Mortgage information
      */
     public void clearDepositDetailInfos(DepositInfo info) {
         info.getDepositDetailInfos().clear();
@@ -162,10 +172,6 @@ public class DepositService {
 
     public int getTotalDepositAddressCount() {
         return totalDepositAddressCount;
-    }
-
-    public void setTotalDepositAddressCount(int totalDepositAddressCount) {
-        this.totalDepositAddressCount = totalDepositAddressCount;
     }
 
 

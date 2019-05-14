@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 /**
- * 奖励周期内的抵押信息
+ * Reward cycle information
  *
  * @author: Long
  * @date: 2019-04-19
@@ -12,22 +12,22 @@ import java.math.BigInteger;
 public class RewardCycleInfo {
 
     /**
-     * 奖励周期
+     * the reward cycle
      */
     private int rewardingCylce;
 
     /**
-     * 当前奖励周期的单价
+     * The current price reward cycle
      */
     private BigDecimal currentPrice;
 
     /**
-     * 抵押总量
+     * Total amount of mortgage
      */
     private BigInteger depositAmount;
 
     /**
-     * 距离上次统计相差的奖励周期数
+     * Number of reward cycles that differ from the last statistics
      */
     private int differCycleValue;
 

@@ -63,22 +63,23 @@ public class Pocm extends PocmToken implements Contract {
     public Pocm(@Required String name, @Required String symbol, @Required BigInteger initialAmount, @Required int decimals, @Required BigDecimal price, @Required int awardingCycle,
                 @Required BigDecimal minimumDepositNULS, @Required int minimumLocked, String rewardHalvingCycle, String maximumDepositAddressCount, String[] receiverAddress, long[] receiverAmount) {
         super(name, symbol, initialAmount, decimals, receiverAddress, receiverAmount);
-        // 检查 price 小数位不得大于decimals
-        require(price.compareTo(BigDecimal.ZERO) > 0, "价格应该大于0");
-        require(checkMaximumDecimals(price, decimals), "最多" + decimals + "位小数");
-        require(minimumLocked > 0, "最短锁定区块值应该大于0");
-        require(awardingCycle > 0, "奖励发放周期应该大于0");
+
+        // Check that the decimal number of price must not be greater than decimals
+        require(price.compareTo(BigDecimal.ZERO) > 0, "Price should be greater than 0");
+        require(checkMaximumDecimals(price, decimals), "Maximum " + decimals + "-bit decimal");
+        require(minimumLocked > 0, "The minimum lock block value should be greater than 0");
+        require(awardingCycle > 0, "Incentive distribution cycle should be greater than 0");
         int rewardHalvingCycleForInt = 0;
         int maximumDepositAddressCountForInt = 0;
         if (rewardHalvingCycle != null && rewardHalvingCycle.trim().length() > 0) {
-            require(canConvertNumeric(rewardHalvingCycle.trim(), String.valueOf(Integer.MAX_VALUE)), "奖励减半周期输入不合法，应该输入小于2147483647的数字字符");
+            require(canConvertNumeric(rewardHalvingCycle.trim(), String.valueOf(Integer.MAX_VALUE)), "The half-cycle input of the reward is illegal, and the number character less than 2147483647 should be input.");
             rewardHalvingCycleForInt = Integer.parseInt(rewardHalvingCycle.trim());
-            require(rewardHalvingCycleForInt >= 0, "奖励减半周期应该大于等于0");
+            require(rewardHalvingCycleForInt >= 0, "The half-life of the reward should be greater than or equal to 0.");
         }
         if (maximumDepositAddressCount != null && maximumDepositAddressCount.trim().length() > 0) {
-            require(canConvertNumeric(maximumDepositAddressCount.trim(), String.valueOf(Integer.MAX_VALUE)), "最低抵押数量输入不合法，应该输入小于2147483647的数字字符");
+            require(canConvertNumeric(maximumDepositAddressCount.trim(), String.valueOf(Integer.MAX_VALUE)), "The minimum amount of mortgage is illegally entered, and digital characters less than 2147483647 should be entered.");
             maximumDepositAddressCountForInt = Integer.parseInt(maximumDepositAddressCount.trim());
-            require(maximumDepositAddressCountForInt >= 0, "最低抵押数量应该大于等于0");
+            require(maximumDepositAddressCountForInt >= 0, "The minimum amount of mortgage should be greater than or equal to 0.");
         }
 
         depositService = new DepositService(minimumLocked, toNa(minimumDepositNULS), maximumDepositAddressCountForInt);
@@ -88,7 +89,7 @@ public class Pocm extends PocmToken implements Contract {
         BigInteger receiverTotalAmount = BigInteger.ZERO;
         if (receiverAddress != null && receiverAmount != null) {
             Address[] receiverAddr = convertStringToAddres(receiverAddress);
-            //给接收者地址空投Token
+            //Airdrop Token to the Receiver Address
             for (int i = 0; i < receiverAddress.length; i++) {
                 if (receiverAddress[i].equals(Msg.sender().toString())) {
                     continue;
@@ -118,7 +119,7 @@ public class Pocm extends PocmToken implements Contract {
     }
 
     /**
-     * 为自己抵押获取Token
+     * Get Token by Mortgaging Nuls for Yourself
      *
      * @return
      */
@@ -130,19 +131,19 @@ public class Pocm extends PocmToken implements Contract {
         long depositNumber = NUMBER++;
         DepositInfo info = depositService.addDeposit(userStr, userStr, value, currentHeight, depositNumber);
 
-        //将抵押数加入队列中
+        //Add the number of mortgages to the queue
         miningService.putDeposit(value, currentHeight);
 
-        //初始化挖矿信息
+        //Initialization of mining information
         miningService.initMingInfo(currentHeight, userStr, userStr, depositNumber);
 
         emit(new DepositInfoEvent(info));
     }
 
     /**
-     * 为他人抵押挖取Token
+     * Get Token by Mortgaging Nuls for Others
      *
-     * @param miningAddress 指定挖出Token的接受地址
+     * @param miningAddress Specify an acceptable address to get Token
      * @return
      */
     @Payable
@@ -153,19 +154,19 @@ public class Pocm extends PocmToken implements Contract {
         long depositNumber = NUMBER++;
         DepositInfo info = depositService.addDeposit(userStr, miningAddress.toString(), value, currentHeight, depositNumber);
 
-        //将抵押数加入队列中
+        //Add the number of mortgages to the queue
         miningService.putDeposit(value, currentHeight);
 
-        //初始化挖矿信息
+        //Initialization of mining information
         miningService.initMingInfo(currentHeight, miningAddress.toString(), userStr, depositNumber);
 
         emit(new DepositInfoEvent(info));
     }
 
     /**
-     * 退出抵押挖矿，当抵押编号为0时退出全部抵押
+     * Withdrawal from mortgage mining and withdrawal from all mortgages when the mortgage number is 0
      *
-     * @param number 抵押编号
+     * @param number Mortgage number
      * @return
      */
     public void quit(String number) {
@@ -173,30 +174,30 @@ public class Pocm extends PocmToken implements Contract {
         String userStr = Msg.sender().toString();
         long depositNumber = 0;
         if (number != null && number.trim().length() > 0) {
-            require(canConvertNumeric(number.trim(), String.valueOf(Long.MAX_VALUE)), "抵押编号输入不合法，应该输入数字字符");
+            require(canConvertNumeric(number.trim(), String.valueOf(Long.MAX_VALUE)), "Mortgage Number Input is Illegal and Digital Characters should be Input");
             depositNumber = Long.valueOf(number.trim());
         }
         DepositInfo depositInfo = depositService.getDepositInfo(userStr);
-        require(depositInfo != null, "此用户未参与抵押");
+        require(depositInfo != null, "This user is not involved in the mortgage");
 
-        // 发放奖励
+        // Award
         this.receive(depositInfo);
 
         BigInteger deposit;
         MiningInfo miningInfo;
 
-        //表示退出全部的抵押
+        //Withdrawal of all mortgages
         if (depositNumber == 0) {
             miningInfo = miningService.getMiningInfo(depositInfo.getDepositorAddress());
             long result = depositService.checkAllDepositLocked(depositInfo);
-            require(result == -1, "挖矿的NULS没有全部解锁");
+            require(result == -1, "The mortgaged NULS is not fully unlocked");
 
             deposit = depositInfo.getDepositTotalAmount();
             miningService.removeAllMiningInfo(depositInfo);
 
             Map<Long, DepositDetailInfo> depositDetailInfos = depositInfo.getDepositDetailInfos();
 
-            //从队列中退出抵押金额
+            //Withdrawal from the totalDepositList queue
             for (Long key : depositDetailInfos.keySet()) {
                 DepositDetailInfo detailInfo = depositDetailInfos.get(key);
                 miningService.quitDeposit(detailInfo, currentHeight);
@@ -204,25 +205,26 @@ public class Pocm extends PocmToken implements Contract {
 
             depositService.clearDepositDetailInfos(depositInfo);
         } else {
-            //退出某一次抵押
+            //Withdrawal from a mortgage
             DepositDetailInfo detailInfo = depositInfo.getDepositDetailInfoByNumber(depositNumber);
 
             miningInfo = miningService.getMiningInfo(detailInfo.getMiningAddress());
 
             long unLockedHeight = depositService.checkDepositLocked(detailInfo);
-            require(unLockedHeight == -1, "挖矿锁定中, 解锁高度是 " + unLockedHeight);
+            require(unLockedHeight == -1, "In mining locking, the unlocking height is " + unLockedHeight);
 
-            //删除挖矿信息
+            //Delete mining information
             miningService.removeMiningInfo(detailInfo.getMiningAddress(), depositNumber);
 
-            //删除抵押信息
+            //Delete Mortgage Information
             depositInfo.removeDepositDetailInfoByNumber(depositNumber);
 
-            // 退押金
+            // Return the deposit money
             deposit = detailInfo.getDepositAmount();
             depositInfo.setDepositTotalAmount(depositInfo.getDepositTotalAmount().subtract(deposit));
             depositInfo.setDepositCount(depositInfo.getDepositCount() - 1);
-            //从队列中退出抵押金额
+
+            //Withdrawal from the totalDepositList queue
             miningService.quitDeposit(detailInfo, currentHeight);
         }
 
@@ -237,20 +239,21 @@ public class Pocm extends PocmToken implements Contract {
     }
 
     /**
-     * 领取奖励,领取为自己抵押挖矿的Token
+     * Receive Token for the mortgage nuls
      */
     public void receiveAwards() {
         Address user = Msg.sender();
         MiningInfo miningInfo = miningService.getMiningInfo(user.toString());
-        require(miningInfo != null, "没有为自己抵押挖矿的挖矿信息");
+        require(miningInfo != null, "Mining information that does not mortgage itself");
         DepositInfo depositInfo = depositService.getDepositInfo(user.toString());
-        require(depositInfo != null, "此用户未参与抵押");
+        require(depositInfo != null, "This user is not involved in the mortgage");
         this.receive(depositInfo);
         emit(new MiningInfoEvent(miningInfo));
     }
 
     /**
-     * 由挖矿接收地址发起领取奖励;当抵押用户为其他用户做抵押挖矿时，接收token用户可以发起此方法
+     * The Token Award is initiated by the receiving address;
+     * when the mortgage user makes a mortgage for other users to dig, the receiving token user can initiate this method.
      *
      * @return
      */
@@ -258,13 +261,13 @@ public class Pocm extends PocmToken implements Contract {
         List<String> alreadyReceive = new ArrayList<String>();
         Address user = Msg.sender();
         MiningInfo info = miningService.getMiningInfo(user.toString());
-        require(info != null, "没有替" + user.toString() + "用户抵押挖矿的挖矿信息");
+        require(info != null, "Mining information not collateralized for " + user.toString());
         Map<Long, MiningDetailInfo> detailInfos = info.getMiningDetailInfos();
         for (Long key : detailInfos.keySet()) {
             MiningDetailInfo detailInfo = detailInfos.get(key);
             if (!alreadyReceive.contains(detailInfo.getDepositorAddress())) {
                 DepositInfo depositInfo = depositService.getDepositInfo(detailInfo.getDepositorAddress());
-                require(depositInfo != null, "此用户未参与抵押");
+                require(depositInfo != null, "This user is not involved in the mortgage");
                 this.receive(depositInfo);
                 alreadyReceive.add(detailInfo.getDepositorAddress());
             }
@@ -273,7 +276,7 @@ public class Pocm extends PocmToken implements Contract {
     }
 
     /**
-     * 查找用户挖矿信息
+     * View User Mining Information
      */
     @View
     public MiningInfo getMingInfo(@Required Address address) {
@@ -281,7 +284,7 @@ public class Pocm extends PocmToken implements Contract {
     }
 
     /**
-     * 查找用户的抵押信息
+     * View User Mortgage Information
      *
      * @return
      */
@@ -291,7 +294,7 @@ public class Pocm extends PocmToken implements Contract {
     }
 
     /**
-     * 获取空投信息
+     * View Airdrop Information
      *
      * @return
      */
@@ -301,7 +304,7 @@ public class Pocm extends PocmToken implements Contract {
     }
 
     /**
-     * 当前价格
+     * View the current price
      */
     @View
     public String currentPrice() {
@@ -311,11 +314,11 @@ public class Pocm extends PocmToken implements Contract {
     }
 
     /**
-     * 初始价格
+     * Initial price
      */
     @View
     public String initialPrice() {
-        return miningService.getinitialPrice().toPlainString() + " " + name() + "/ x NULS";
+        return miningService.getInitialPrice().toPlainString() + " " + name() + "/ x NULS";
     }
 
     @View
@@ -324,22 +327,22 @@ public class Pocm extends PocmToken implements Contract {
     }
 
     @View
-    public int getTotalDepositNumber(){
-        return  miningService.getTotalDepositList().size();
+    public int getTotalDepositNumber() {
+        return miningService.getTotalDepositList().size();
     }
 
     @View
     public String getTotalDepositList() {
         List<RewardCycleInfo> totalDepositList = miningService.getTotalDepositList();
-        int size =totalDepositList.size();
+        int size = totalDepositList.size();
         String depositInfo = "{";
         for (int i = 0; i < size; i++) {
             RewardCycleInfo info = totalDepositList.get(i);
             depositInfo = depositInfo + info.toString() + ",";
         }
-        if(size>0){
+        if (size > 0) {
             depositInfo = depositInfo.substring(0, depositInfo.length() - 1) + "}";
-        }else{
+        } else {
             depositInfo = depositInfo + "}";
         }
 
@@ -347,7 +350,7 @@ public class Pocm extends PocmToken implements Contract {
     }
 
     /**
-     * 当前奖励周期
+     * the current reward cycle
      *
      * @return
      */
@@ -393,14 +396,13 @@ public class Pocm extends PocmToken implements Contract {
 
 
     /**
-     * 领取奖励
+     * Receive awards
      *
      * @param depositInfo
-     * @return 返回请求地址的挖矿信息
      */
     private void receive(DepositInfo depositInfo) {
         Map<String, BigInteger> mingResult = new HashMap<String, BigInteger>();
-        // 奖励计算, 计算每次挖矿的高度是否已达到奖励减半周期的范围，若达到，则当次奖励减半，以此类推
+        //Calculate the amount of reward
         BigInteger thisMining = miningService.calcMining(depositInfo, mingResult);
         Set<String> set = new HashSet<String>(mingResult.keySet());
         for (String address : set) {

@@ -15,10 +15,13 @@ import static io.nuls.contract.sdk.Utils.require;
 public class Ownable {
 
     /**
-     * 合约创建者
+     * Contract Creator
      */
     protected Address contractCreator;
 
+    /**
+     * Contract Owner
+     */
     protected Address owner;
 
     public Ownable() {
@@ -41,7 +44,7 @@ public class Ownable {
     }
 
     /**
-     * 转让合约所有权
+     * Transfer of contract ownership
      *
      * @param newOwner
      */
@@ -52,7 +55,7 @@ public class Ownable {
     }
 
     /**
-     * 放弃合约
+     * Give up the contract
      */
     public void renounceOwnership() {
         onlyOwner();
@@ -61,14 +64,18 @@ public class Ownable {
     }
 
     /**
-     * 转移owner
+     * Transfer of Contract Ownership Event
      */
     class OwnershipTransferredEvent implements Event {
 
-        //先前拥有者
+        /**
+         *  Previous owners
+         */
         private Address previousOwner;
 
-        //新的拥有者
+        /**
+         * New owners
+         */
         private Address newOwner;
 
         public OwnershipTransferredEvent(Address previousOwner, Address newOwner) {

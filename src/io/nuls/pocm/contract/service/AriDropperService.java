@@ -12,12 +12,12 @@ import java.util.List;
 public class AriDropperService {
 
     /**
-     * 接收空投地址列表
+     * Receiving Airdrop Address List
      */
     private List<AirdropperInfo> ariDropperInfos = new ArrayList<AirdropperInfo>();
 
     /**
-     * 添加空投记录
+     * Adding Airdrop Records
      *
      * @param info
      */
@@ -26,7 +26,7 @@ public class AriDropperService {
     }
 
     /**
-     * 获取空投列表记录
+     * Query airdrop records
      *
      * @return
      */

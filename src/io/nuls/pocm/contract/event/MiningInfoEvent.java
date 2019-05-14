@@ -4,7 +4,7 @@ import io.nuls.contract.sdk.Event;
 import io.nuls.pocm.contract.model.MiningInfo;
 
 /**
- * 挖矿信息事件
+ * Mining Information Event
  *
  * @author: Long
  * @date: 2019-03-15

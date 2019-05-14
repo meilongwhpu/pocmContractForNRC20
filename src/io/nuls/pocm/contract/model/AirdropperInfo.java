@@ -3,17 +3,21 @@ package io.nuls.pocm.contract.model;
 import java.math.BigInteger;
 
 /**
- * 空投信息
+ * Airdrop information
  *
  * @author: Long
  * @date: 2019-03-15
  */
 public class AirdropperInfo {
 
-    //接收空投地址
+    /**
+     * Receiving Airdrop Address
+     */
     private String receiverAddress;
 
-    //空投数量
+    /**
+     * Quantity of airdrop
+     */
     private BigInteger airdropperAmount;
 
     public AirdropperInfo() {

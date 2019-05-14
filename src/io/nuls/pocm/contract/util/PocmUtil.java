@@ -1,26 +1,3 @@
-/**
- * MIT License
- * <p>
- * Copyright (c) 2017-2018 nuls.io
- * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * <p>
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
 package io.nuls.pocm.contract.util;
 
 import io.nuls.contract.sdk.Address;
@@ -29,7 +6,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 /**
- * 工具类
+ * Tool
  *
  * @author: Long
  * @date: 2019-03-15
@@ -47,10 +24,10 @@ public class PocmUtil {
     }
 
     /**
-     * 单价的精度不能超过定义的精度
+     * The precision of price should not exceed the precision of definition.
      *
-     * @param price    单价
-     * @param decimals 精度
+     * @param price    Price
+     * @param decimals precision
      * @return
      */
     public static boolean checkMaximumDecimals(BigDecimal price, int decimals) {
@@ -63,7 +40,7 @@ public class PocmUtil {
     }
 
     /**
-     * 检查空投数组的数额是否正确
+     * Check that the amount of the airdrop array
      *
      * @param receiverAmount
      * @return
@@ -80,7 +57,7 @@ public class PocmUtil {
     }
 
     /**
-     * 计算空投数组的总额
+     * Calculate the total number of airdrop arrays
      *
      * @param receiverAmount
      * @return
@@ -96,7 +73,7 @@ public class PocmUtil {
     }
 
     /**
-     * 将空投地址数组转换格式
+     * Converting Airdrop Address Array to Format
      *
      * @param receiveraddresses
      * @return

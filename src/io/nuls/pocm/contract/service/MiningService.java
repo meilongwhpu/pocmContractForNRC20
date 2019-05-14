@@ -18,57 +18,57 @@ import static io.nuls.pocm.contract.util.PocmUtil.toNuls;
 public class MiningService {
 
     /**
-     * 初始价格，每个奖励周期所有的NULS抵押数平分XX个token
+     * The initial price of NULS, each award cycle all the number of split XX token mortgage
      */
     private BigDecimal initialPrice;
 
     /**
-     * 合约创建高度
+     * Contract creation height
      */
     private long createHeight;
 
     /**
-     * 奖励发放周期（参数类型为数字，每过XXXX块发放一次）
+     * Reward distribution cycle (parameter type is digital, every XX block is issued once)
      */
     private int awardingCycle;
 
     /**
-     * 奖励减半周期（可选参数，若选择，则参数类型为数字，每XXXXX块奖励减半）
+     * Award halving period (optional parameters, if selected, the parameter type is digital, reward halving per XX height)
      */
     private int rewardHalvingCycle;
 
     /**
-     * 精度
+     * precision
      */
     private int decimals;
 
     /**
-     * 用户挖矿信息(key为接收挖矿Token地址）
+     * User mining information (key is the Token address for receiving mining)
      */
     private Map<String, MiningInfo> mingUsers = new HashMap<String, MiningInfo>();
 
     /**
-     * 每个奖励周期的抵押金额索引，k-v：奖励周期-List序号
+     * Index of mortgage amount for each incentive cycle. Key: Reward Cycle, V: Corresponding Number in Reward Cycle Information Queue
      */
-    private Map<Integer, Integer> totalDepositIndex=new LinkedHashMap<Integer, Integer>();
+    private Map<Integer, Integer> totalDepositIndex = new LinkedHashMap<Integer, Integer>();
 
     /**
-     * 抵押金额列表，与索引表联合使用
+     * Reward cycle information list, and the combined use of index table
      */
-    private List<RewardCycleInfo> totalDepositList =new LinkedList<RewardCycleInfo>();
+    private List<RewardCycleInfo> totalDepositList = new LinkedList<RewardCycleInfo>();
 
     /**
-     * 下一次奖励减半的高度
+     * The next half the height of reward
      */
     private long nextRewardHalvingHeight;
 
     /**
-     * 上一次抵押数量有变动的奖励周期
+     * The last calculation of the reward cycle
      */
     private int lastCalcCycle = 0;
 
     /**
-     * 当前价格，当前奖励周期所有的NULS抵押数平分XX个token
+     * The current price, the current NULS award cycle all mortgage number XX token share
      */
     private BigDecimal currentPrice;
 
@@ -79,10 +79,10 @@ public class MiningService {
         this.decimals = decimals;
         this.initialPrice = initialPrice;
         this.nextRewardHalvingHeight = this.createHeight + this.rewardHalvingCycle;
-        this.currentPrice=initialPrice;
+        this.currentPrice = initialPrice;
     }
 
-    public BigDecimal getinitialPrice() {
+    public BigDecimal getInitialPrice() {
         return initialPrice;
     }
 
@@ -90,14 +90,24 @@ public class MiningService {
         return createHeight;
     }
 
+    /**
+     * Get the current price
+     *
+     * @param currentHeight current height
+     * @return
+     */
     public BigDecimal getCurrentPrice(long currentHeight) {
         BigDecimal price = this.initialPrice;
+
+        //Is there a record in the reward cycle queue?
         if (!this.totalDepositList.isEmpty()) {
             int currentCycle = this.calcRewardCycle(currentHeight);
-            //检查当前奖励周期的总抵押数是否在队列中
+            //Check whether the current reward cycle is in the index
             if (!this.totalDepositIndex.containsKey(currentCycle)) {
+                //If not, a reward record for the current reward cycle is generated
                 moveLastDepositToCurrentCycle(currentHeight);
             }
+            //Get the latest reward cycle record
             RewardCycleInfo cycleInfoTmp = this.totalDepositList.get(this.totalDepositList.size() - 1);
             BigInteger intAmount = cycleInfoTmp.getDepositAmount();
             if (intAmount.compareTo(BigInteger.ZERO) != 0) {
@@ -105,9 +115,10 @@ public class MiningService {
                 BigDecimal bigAmount = new BigDecimal(amount);
                 price = cycleInfoTmp.getCurrentPrice().divide(bigAmount, decimals, BigDecimal.ROUND_DOWN);
             }
-        }else {
+        } else {
+            //If there is no record of the reward cycle, the half-cycle price is calculated.
             if (this.rewardHalvingCycle > 0 && this.nextRewardHalvingHeight <= currentHeight) {
-                price =calcHalvingPrice(currentHeight);
+                price = calcHalvingPrice(currentHeight);
             }
         }
         return price;
@@ -130,19 +141,19 @@ public class MiningService {
     }
 
     /**
-     * 初始化挖矿信息
+     * Initialization of mining information
      *
-     * @param miningAddress
-     * @param depositorAddress
-     * @param depositNumber
-     * @return
+     * @param currentHeight    current height
+     * @param miningAddress    mining address
+     * @param depositorAddress depositor address
+     * @param depositNumber    deposit number
      */
     public void initMingInfo(long currentHeight, String miningAddress, String depositorAddress, long depositNumber) {
         MiningDetailInfo mingDetailInfo = new MiningDetailInfo(miningAddress, depositorAddress, depositNumber);
         int currentRewardCycle = this.calcRewardCycle(currentHeight);
         mingDetailInfo.setNextStartMiningCycle(currentRewardCycle + 2);
         MiningInfo mingInfo = mingUsers.get(miningAddress);
-        //该Token地址为第一次挖矿
+        //The address for the first time in mining
         if (mingInfo == null) {
             mingInfo = new MiningInfo();
             mingInfo.getMiningDetailInfos().put(depositNumber, mingDetailInfo);
@@ -157,9 +168,10 @@ public class MiningService {
     }
 
     /**
-     * 删除单笔抵押的挖矿信息
+     * Delete single mortgage mining information
      *
-     * @param userAddress
+     * @param userAddress   user address
+     * @param depositNumber deposit number
      */
     public void removeMiningInfo(String userAddress, long depositNumber) {
         MiningInfo miningInfo = mingUsers.get(userAddress);
@@ -170,9 +182,9 @@ public class MiningService {
     }
 
     /**
-     * 删除用户的所有挖矿信息
+     * Delete all mining information from users
      *
-     * @param depositInfo
+     * @param depositInfo Mortgage information
      */
     public void removeAllMiningInfo(DepositInfo depositInfo) {
         Map<Long, DepositDetailInfo> depositDetailInfos = depositInfo.getDepositDetailInfos();
@@ -187,14 +199,14 @@ public class MiningService {
     }
 
     /**
-     * 在加入抵押时将抵押金额加入队列中
+     * Add the amount of the mortgage to the queue when joining the mortgage
      *
-     * @param depositValue
-     * @param currentHeight
+     * @param depositValue  the amount of mortgage
+     * @param currentHeight current height
      */
     public void putDeposit(BigInteger depositValue, long currentHeight) {
         int currentCycle = this.calcRewardCycle(currentHeight);
-        //检查下一个奖励周期的总抵押数是否在队列中
+        //Check whether the total number of mortgages in the next incentive cycle is in the queue
         if (!totalDepositIndex.containsKey(currentCycle + 1)) {
             moveLastDepositToCurrentCycle(currentHeight + this.awardingCycle);
         }
@@ -203,13 +215,14 @@ public class MiningService {
         boolean isContainsKey = totalDepositIndex.containsKey(putCycle);
         RewardCycleInfo cycleInfo = new RewardCycleInfo();
         if (!isContainsKey) {
-            //计算奖励减半
+            //Calculate the price of halving the reward
             long rewardingHeight = putCycle * this.awardingCycle + this.createHeight;
             if (this.rewardHalvingCycle > 0 && this.nextRewardHalvingHeight <= rewardingHeight) {
                 this.currentPrice = this.currentPrice.divide(PocmUtil.HLAVING, decimals, BigDecimal.ROUND_DOWN);
                 this.nextRewardHalvingHeight += this.rewardHalvingCycle;
             }
 
+            //First addition of reward cycle records
             if (this.lastCalcCycle == 0) {
                 cycleInfo.setDepositAmount(depositValue);
                 cycleInfo.setRewardingCylce(putCycle);
@@ -234,29 +247,32 @@ public class MiningService {
     }
 
     /**
-     * @param detailInfo
-     * @param currentHeight
+     * Exit the reward cycle queue
+     *
+     * @param detailInfo    Mortgage detailed information
+     * @param currentHeight current height
      */
     public void quitDeposit(DepositDetailInfo detailInfo, long currentHeight) {
-        //从队列中退出抵押金额
+        //Amount of Mortgage Withdrawal
         BigInteger depositValue = detailInfo.getDepositAmount();
         int currentCycle = calcRewardCycle(currentHeight);
         int depositCycle = calcRewardCycle(detailInfo.getDepositHeight());
 
         if (currentCycle == depositCycle) {
-            //加入抵押和退出抵押在同一个奖励周期，更新下一个奖励周期的总抵押数
+            //When the mortgage and mortgage exit in the same reward cycle, update the total mortgage a reward cycle number
             RewardCycleInfo cycleInfoTmp = totalDepositList.get(this.totalDepositIndex.get(currentCycle + 2));
             cycleInfoTmp.setDepositAmount(cycleInfoTmp.getDepositAmount().subtract(depositValue));
         } else {
-            //加入抵押和退出抵押不在同一个奖励周期,则更新当前奖励周期的总抵押数
+            //Update the total number of mortgages in the current incentive cycle when joining and withdrawing mortgages are not in the same cycle
             int operCycle = currentCycle + 1;
             boolean isContainsKey = this.totalDepositIndex.containsKey(operCycle);
-            //待操作的奖励周期已经计算了总抵押数
+
             if (isContainsKey) {
+                //The reward cycle index already contains the reward cycle to be operated on.
                 RewardCycleInfo cycleInfoTmp = this.totalDepositList.get(this.totalDepositIndex.get(operCycle));
                 cycleInfoTmp.setDepositAmount(cycleInfoTmp.getDepositAmount().subtract(depositValue));
             } else {
-                //当前高度已经达到奖励减半高度,将所有的减半周期高度对于的奖励高度加入队列
+                //The current height has reached the reward halving height, and all reward heights corresponding to the halving cycle height are added to the queue.
                 long nextHeight = currentHeight + awardingCycle;
                 if (rewardHalvingCycle > 0 && nextRewardHalvingHeight <= nextHeight) {
                     this.moveLastDepositToHalvingCycle(nextRewardHalvingHeight, nextHeight);
@@ -264,23 +280,26 @@ public class MiningService {
 
                 RewardCycleInfo cycleInfo = new RewardCycleInfo();
 
-                //取队列中最后一个奖励周期的信息
+                //Get the latest information about the reward cycle from the reward cycle queue
                 RewardCycleInfo cycleInfoTmp = this.totalDepositList.get(this.totalDepositList.size() - 1);
                 cycleInfo.setDepositAmount(cycleInfoTmp.getDepositAmount().subtract(depositValue));
                 cycleInfo.setDifferCycleValue(operCycle - cycleInfoTmp.getRewardingCylce());
                 cycleInfo.setCurrentPrice(currentPrice);
                 cycleInfo.setRewardingCylce(operCycle);
-                this.totalDepositList.add(cycleInfo);
 
+                //Add reward cycle information to the queue and update the index
+                this.totalDepositList.add(cycleInfo);
                 totalDepositIndex.put(operCycle, this.totalDepositList.size() - 1);
                 this.lastCalcCycle = operCycle;
             }
         }
-
     }
 
+
     /**
-     * 抵押数额没有变动的情况下，将奖励减半周期所在高度的奖励周期抵押数加入队列
+     * When the amount of mortgage remains unchanged, the information of the incentive cycle at the height of the half-cycle of the incentive is added to the queue.
+     * @param startRewardHalvingHeight  Half the Starting Height
+     * @param currentHeight  current height
      */
     private void moveLastDepositToHalvingCycle(long startRewardHalvingHeight, long currentHeight) {
         int rewardingCycle = this.lastCalcCycle;
@@ -299,7 +318,7 @@ public class MiningService {
                 cycleInfo.setDepositAmount(cycleInfoTmp.getDepositAmount());
                 cycleInfo.setDifferCycleValue(rewardingCycle - cycleInfoTmp.getRewardingCylce());
             } else {
-                //第一次进行抵押操作
+                //First mortgage operation
                 cycleInfo.setDepositAmount(BigInteger.ZERO);
                 cycleInfo.setDifferCycleValue(1);
             }
@@ -315,17 +334,17 @@ public class MiningService {
 
 
     /**
-     * 计算奖励数额
+     * Calculate the amount of reward
      *
-     * @param depositInfo
-     * @param mingResult
+     * @param depositInfo Mortgage information
+     * @param mingResult  Mining results
      * @return
      */
     public BigInteger calcMining(DepositInfo depositInfo, Map<String, BigInteger> mingResult) {
         BigInteger mining = BigInteger.ZERO;
         long currentHeight = Block.number();
         int currentRewardCycle = this.calcRewardCycle(currentHeight);
-        //将上一个奖励周期的总抵押数更新至当前奖励周期的总抵押数
+        //Update the mortgage information of the previous incentive cycle to the mortgage information of the current incentive cycle
         this.moveLastDepositToCurrentCycle(currentHeight);
 
         Map<Long, DepositDetailInfo> detailInfos = depositInfo.getDepositDetailInfos();
@@ -336,7 +355,7 @@ public class MiningService {
             MiningInfo miningInfo = mingUsers.get(detailInfo.getMiningAddress());
             MiningDetailInfo mingDetailInfo = miningInfo.getMiningDetailInfoByNumber(detailInfo.getDepositNumber());
             int nextStartMiningCycle = mingDetailInfo.getNextStartMiningCycle();
-            //说明未到领取奖励的高度
+            //Not reaching the height of reward
             if (nextStartMiningCycle > currentRewardCycle) {
                 continue;
             }
@@ -360,28 +379,28 @@ public class MiningService {
     }
 
     /**
-     * 将当前高度的奖励周期加入队列
+     * Add the current high reward cycle to the queue
      *
-     * @param currentHeight
+     * @param currentHeight current height
      */
     private void moveLastDepositToCurrentCycle(long currentHeight) {
         int currentCycle = this.calcRewardCycle(currentHeight);
-        //若当前高度的奖励周期在队列中，则直接退出此方法
+        //If the current high reward cycle is in the queue, exit the method directly.
         if (this.totalDepositIndex.containsKey(currentCycle)) {
             return;
         } else {
-            //当前高度已经达到奖励减半高度,将所有的减半周期高度对于的奖励高度加入队列
+            //The current height has reached the reward halving height, and all reward information corresponding to the halving period height is added to the queue.
             if (this.rewardHalvingCycle > 0 && this.nextRewardHalvingHeight <= currentHeight) {
                 this.moveLastDepositToHalvingCycle(nextRewardHalvingHeight, currentHeight);
             }
         }
 
-        //此时再检查是否当前高度的奖励周期在队列中
+        //At this point, check if the current high reward cycle is in the queue.
         if (!this.totalDepositIndex.containsKey(currentCycle)) {
             RewardCycleInfo cycleInfo = new RewardCycleInfo();
             RewardCycleInfo cycleInfoTmp;
             if (!this.totalDepositList.isEmpty()) {
-                //取队列中最后一个奖励周期的信息
+                //Get information about the last reward cycle in the queue
                 cycleInfoTmp = this.totalDepositList.get(this.totalDepositList.size() - 1);
                 cycleInfo.setDepositAmount(cycleInfoTmp.getDepositAmount());
                 cycleInfo.setDifferCycleValue(currentCycle - cycleInfoTmp.getRewardingCylce());
@@ -400,9 +419,9 @@ public class MiningService {
     }
 
     /**
-     * 从指定的奖励周期开始计算奖励价格之和
+     * Calculate the sum of incentive prices from the specified incentive cycle
      *
-     * @param startCycle
+     * @param startCycle the start the reward cycle
      * @return
      */
     private BigDecimal calcPriceBetweenCycle(int startCycle) {
@@ -422,9 +441,9 @@ public class MiningService {
     }
 
     /**
-     * 计算当前高度所在的奖励周期
+     * Calculate the reward period for the current height
      *
-     * @param currentHeight 当前高度
+     * @param currentHeight current height
      * @return
      */
     public int calcRewardCycle(long currentHeight) {
@@ -432,28 +451,29 @@ public class MiningService {
     }
 
     /**
-     * 计算减半周期的单价,减半周期最大允许90次
+     * Calculate the unit price of the half-cycle, the maximum allowable 90 times of the half-cycle
+     *
      * @param currentHeight
      * @return
      */
-    private BigDecimal calcHalvingPrice(long currentHeight){
-        int rewardHalvingRound= Integer.parseInt(String.valueOf(currentHeight-this.createHeight-1))/this.rewardHalvingCycle;
-        BigDecimal round=BigDecimal.ZERO;
-        int count=rewardHalvingRound/30;
-        BigDecimal base=new BigDecimal(2<<29);
-        if(count==0||rewardHalvingRound==30){
-            round=new BigDecimal(2<<rewardHalvingRound-1);
-        }else if(count==1||rewardHalvingRound==60){
-            round=new BigDecimal(2<<rewardHalvingRound-31);
-            round =base.multiply(round);
-        }else if(count==2||rewardHalvingRound==90){
-            round=new BigDecimal(2<<rewardHalvingRound-61);
-            round =base.multiply(base).multiply(round);
-        }else{
-            require(false, "减半周期次数最大允许90次,目前已经达到"+rewardHalvingRound+"次");
+    private BigDecimal calcHalvingPrice(long currentHeight) {
+        int rewardHalvingRound = Integer.parseInt(String.valueOf(currentHeight - this.createHeight - 1)) / this.rewardHalvingCycle;
+        BigDecimal round = BigDecimal.ZERO;
+        int count = rewardHalvingRound / 30;
+        BigDecimal base = new BigDecimal(2 << 29);
+        if (count == 0 || rewardHalvingRound == 30) {
+            round = new BigDecimal(2 << rewardHalvingRound - 1);
+        } else if (count == 1 || rewardHalvingRound == 60) {
+            round = new BigDecimal(2 << rewardHalvingRound - 31);
+            round = base.multiply(round);
+        } else if (count == 2 || rewardHalvingRound == 90) {
+            round = new BigDecimal(2 << rewardHalvingRound - 61);
+            round = base.multiply(base).multiply(round);
+        } else {
+            require(false, "The maximum allowable number of halving cycles is 90 times, which has reached " + rewardHalvingRound + " times.");
             return BigDecimal.ZERO;
         }
-        return this.initialPrice.divide(round,decimals,BigDecimal.ROUND_DOWN);
+        return this.initialPrice.divide(round, decimals, BigDecimal.ROUND_DOWN);
 
     }
 

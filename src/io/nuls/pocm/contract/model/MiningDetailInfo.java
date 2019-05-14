@@ -3,27 +3,40 @@ package io.nuls.pocm.contract.model;
 import java.math.BigInteger;
 
 /**
- * 挖矿详细信息
+ * detailed information mining
  *
  * @author: Long
  * @date: 2019-03-15
  */
 public class MiningDetailInfo {
-    //对应的抵押编号
+    /**
+     * the mortgage number
+     */
     private long depositNumber;
-    // 挖矿金额
+
+    /**
+     * The amount of mining
+     */
     private BigInteger miningAmount = BigInteger.ZERO;
 
-    //采矿获得的Token的接收地址
+    /**
+     * Receiving address of Token obtained from mining
+     */
     private String receiverMiningAddress;
 
-    // 挖矿次数
+    /**
+     * The number of mining
+     */
     private int miningCount;
 
-    // 下次挖矿的奖励周期
+    /**
+     * the award cycle for next mining
+     */
     private int nextStartMiningCycle;
 
-    //来源地址
+    /**
+     * Source address of mortgage
+     */
     private String depositorAddress;
 
     public MiningDetailInfo(String miningAddress, String depositorAddress, long depositNumber) {

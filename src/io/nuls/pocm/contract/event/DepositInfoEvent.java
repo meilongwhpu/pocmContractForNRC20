@@ -4,7 +4,7 @@ import io.nuls.contract.sdk.Event;
 import io.nuls.pocm.contract.model.DepositInfo;
 
 /**
- * 抵押信息事件
+ * Mortgage Information Event
  *
  * @author: Long
  * @date: 2019-03-15

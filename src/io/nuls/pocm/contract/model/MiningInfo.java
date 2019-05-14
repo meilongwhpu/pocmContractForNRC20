@@ -30,24 +30,24 @@ import java.util.Map;
 import static io.nuls.contract.sdk.Utils.require;
 
 /**
- * 挖矿信息
+ * Mining information
  * @author: Long
  * @date: 2019-03-15
  */
 public class MiningInfo {
 
     /**
-     * 总挖矿金额
+     * Total mining amount
      */
     private BigInteger totalMining;
 
     /**
-     * 已领取挖矿金额
+     * Mining amount received
      */
     private BigInteger receivedMining;
 
     /**
-     * 挖矿明细
+     * Details of mining
      */
     private Map<Long,MiningDetailInfo> miningDetailInfos =new HashMap<Long,MiningDetailInfo>();
 
@@ -87,13 +87,13 @@ public class MiningInfo {
         this.miningDetailInfos = miningDetailInfos;
     }
     /**
-     * 根据抵押编号查找挖矿明细
+     * Find mining details based on mortgage number
      * @param depositNumber
      * @return
      */
     public MiningDetailInfo getMiningDetailInfoByNumber(long depositNumber){
         MiningDetailInfo info=miningDetailInfos.get(depositNumber);
-        require(info != null, "未找到此抵押编号的挖矿详细信息");
+        require(info != null, "Mining details of this mortgage number were not found");
         return info;
     }
 

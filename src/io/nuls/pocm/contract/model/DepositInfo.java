@@ -7,24 +7,30 @@ import java.util.Map;
 import static io.nuls.contract.sdk.Utils.require;
 
 /**
- * 抵押信息
+ * Mortgage information
  *
  * @author: Long
  * @date: 2019-03-15
  */
 public class DepositInfo {
 
-    //抵押者地址
+    /**
+     * Mortgagor's address
+     */
     private String depositorAddress;
 
-    // 抵押金额
+    /**
+     * the amount of mortgage
+     */
     private BigInteger depositTotalAmount;
 
-    //抵押笔数
+    /**
+     * Number of mortgages
+     */
     private int depositCount;
 
     /**
-     * 抵押详细信息列表
+     * Mortgage Details List
      */
     private Map<Long, DepositDetailInfo> depositDetailInfos = new HashMap<Long, DepositDetailInfo>();
 
@@ -52,10 +58,6 @@ public class DepositInfo {
         return depositDetailInfos;
     }
 
-    public void setDepositDetailInfos(Map<Long, DepositDetailInfo> depositDetailInfos) {
-        this.depositDetailInfos = depositDetailInfos;
-    }
-
     public int getDepositCount() {
         return depositCount;
     }
@@ -74,14 +76,14 @@ public class DepositInfo {
     }
 
     /**
-     * 根据抵押编号获取抵押详细信息
+     * Find mortgage details based on mortgage number
      *
      * @param depositNumber
      * @return
      */
     public DepositDetailInfo getDepositDetailInfoByNumber(long depositNumber) {
         DepositDetailInfo info = depositDetailInfos.get(depositNumber);
-        require(info != null, "未找到此抵押编号的抵押详细信息");
+        require(info != null, "Mortgage details of this mortgage number were not found");
         return info;
     }
 
@@ -91,13 +93,6 @@ public class DepositInfo {
     public void removeDepositDetailInfoByNumber(long depositNumber) {
         depositDetailInfos.remove(depositNumber);
     }
-
-    public void clearDepositDetailInfos() {
-        depositDetailInfos.clear();
-        depositCount = 0;
-        depositTotalAmount = BigInteger.ZERO;
-    }
-
 
     @Override
     public String toString() {
