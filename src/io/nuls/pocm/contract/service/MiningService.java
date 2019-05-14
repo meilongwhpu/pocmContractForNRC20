@@ -298,8 +298,9 @@ public class MiningService {
 
     /**
      * When the amount of mortgage remains unchanged, the information of the incentive cycle at the height of the half-cycle of the incentive is added to the queue.
-     * @param startRewardHalvingHeight  Half the Starting Height
-     * @param currentHeight  current height
+     *
+     * @param startRewardHalvingHeight Half the Starting Height
+     * @param currentHeight            current height
      */
     private void moveLastDepositToHalvingCycle(long startRewardHalvingHeight, long currentHeight) {
         int rewardingCycle = this.lastCalcCycle;

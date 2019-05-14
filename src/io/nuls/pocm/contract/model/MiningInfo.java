@@ -31,6 +31,7 @@ import static io.nuls.contract.sdk.Utils.require;
 
 /**
  * Mining information
+ *
  * @author: Long
  * @date: 2019-03-15
  */
@@ -49,17 +50,17 @@ public class MiningInfo {
     /**
      * Details of mining
      */
-    private Map<Long,MiningDetailInfo> miningDetailInfos =new HashMap<Long,MiningDetailInfo>();
+    private Map<Long, MiningDetailInfo> miningDetailInfos = new HashMap<Long, MiningDetailInfo>();
 
     public MiningInfo() {
         this.totalMining = BigInteger.ZERO;
-        this.receivedMining=BigInteger.ZERO;
+        this.receivedMining = BigInteger.ZERO;
     }
 
-    public MiningInfo(MiningInfo info){
-        this.totalMining=info.totalMining;
-        this.receivedMining=info.receivedMining;
-        this.miningDetailInfos=info.miningDetailInfos;
+    public MiningInfo(MiningInfo info) {
+        this.totalMining = info.totalMining;
+        this.receivedMining = info.receivedMining;
+        this.miningDetailInfos = info.miningDetailInfos;
     }
 
 
@@ -86,36 +87,38 @@ public class MiningInfo {
     public void setMiningDetailInfos(Map<Long, MiningDetailInfo> miningDetailInfos) {
         this.miningDetailInfos = miningDetailInfos;
     }
+
     /**
      * Find mining details based on mortgage number
+     *
      * @param depositNumber
      * @return
      */
-    public MiningDetailInfo getMiningDetailInfoByNumber(long depositNumber){
-        MiningDetailInfo info=miningDetailInfos.get(depositNumber);
+    public MiningDetailInfo getMiningDetailInfoByNumber(long depositNumber) {
+        MiningDetailInfo info = miningDetailInfos.get(depositNumber);
         require(info != null, "Mining details of this mortgage number were not found");
         return info;
     }
 
-    public void removeMiningDetailInfoByNumber(long depositNumber){
+    public void removeMiningDetailInfoByNumber(long depositNumber) {
         miningDetailInfos.remove(depositNumber);
     }
 
     @Override
-    public String toString(){
-        return "{totalMining:"+totalMining.toString()+",receivedMining:"+receivedMining.toString()
-                +",miningDetailInfo:"+this.convertMapToString()+"}";
+    public String toString() {
+        return "{totalMining:" + totalMining.toString() + ",receivedMining:" + receivedMining.toString()
+                + ",miningDetailInfo:" + this.convertMapToString() + "}";
     }
 
-    private  String convertMapToString(){
-        String detailinfo ="{";
-        String temp="";
+    private String convertMapToString() {
+        String detailinfo = "{";
+        String temp = "";
         for (Long key : miningDetailInfos.keySet()) {
-            MiningDetailInfo detailInfo=  miningDetailInfos.get(key);
-            temp =detailInfo.toString();
-            detailinfo=detailinfo+temp+",";
+            MiningDetailInfo detailInfo = miningDetailInfos.get(key);
+            temp = detailInfo.toString();
+            detailinfo = detailinfo + temp + ",";
         }
-        detailinfo=detailinfo.substring(0,detailinfo.length()-1)+"}";
+        detailinfo = detailinfo.substring(0, detailinfo.length() - 1) + "}";
         return detailinfo;
     }
 

@@ -69,7 +69,7 @@ public class Ownable {
     class OwnershipTransferredEvent implements Event {
 
         /**
-         *  Previous owners
+         * Previous owners
          */
         private Address previousOwner;
 
