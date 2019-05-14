@@ -4,6 +4,7 @@ import java.math.BigInteger;
 
 /**
  * 空投信息
+ *
  * @author: Long
  * @date: 2019-03-15
  */
@@ -15,13 +16,13 @@ public class AirdropperInfo {
     //空投数量
     private BigInteger airdropperAmount;
 
-    public AirdropperInfo(){
-        this.airdropperAmount=BigInteger.ZERO;
+    public AirdropperInfo() {
+        this.airdropperAmount = BigInteger.ZERO;
     }
 
-    public AirdropperInfo(AirdropperInfo info){
-        this.receiverAddress=info.receiverAddress;
-        this.airdropperAmount=info.airdropperAmount;
+    public AirdropperInfo(AirdropperInfo info) {
+        this.receiverAddress = info.receiverAddress;
+        this.airdropperAmount = info.airdropperAmount;
     }
 
     public String getReceiverAddress() {
@@ -41,7 +42,7 @@ public class AirdropperInfo {
     }
 
     @Override
-    public String toString(){
-        return "{receiverAddress:"+receiverAddress+",airdropperAmount:"+airdropperAmount+"}";
+    public String toString() {
+        return "{receiverAddress:" + receiverAddress + ",airdropperAmount:" + airdropperAmount + "}";
     }
 }

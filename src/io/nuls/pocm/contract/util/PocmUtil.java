@@ -30,10 +30,14 @@ import java.math.BigInteger;
 
 /**
  * 工具类
+ *
  * @author: Long
  * @date: 2019-03-15
  */
 public class PocmUtil {
+
+    public static final BigDecimal HLAVING = new BigDecimal("2");
+
     public static BigDecimal toNuls(BigInteger na) {
         return new BigDecimal(na).movePointLeft(8);
     }
@@ -43,15 +47,32 @@ public class PocmUtil {
     }
 
     /**
+     * 单价的精度不能超过定义的精度
+     *
+     * @param price    单价
+     * @param decimals 精度
+     * @return
+     */
+    public static boolean checkMaximumDecimals(BigDecimal price, int decimals) {
+        BigInteger a = price.movePointRight(decimals).toBigInteger().multiply(BigInteger.TEN);
+        BigInteger b = price.movePointRight(decimals + 1).toBigInteger();
+        if (a.compareTo(b) != 0) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * 检查空投数组的数额是否正确
+     *
      * @param receiverAmount
      * @return
      */
-    public static boolean checkAmount(long[] receiverAmount){
-        boolean result=true;
-        for(int i=0;i<receiverAmount.length;i++){
-            if( receiverAmount[i]< 0){
-                result=false;
+    public static boolean checkAmount(long[] receiverAmount) {
+        boolean result = true;
+        for (int i = 0; i < receiverAmount.length; i++) {
+            if (receiverAmount[i] < 0) {
+                result = false;
                 break;
             }
         }
@@ -60,37 +81,39 @@ public class PocmUtil {
 
     /**
      * 计算空投数组的总额
+     *
      * @param receiverAmount
      * @return
      */
-    public static BigInteger sumAmount(long[] receiverAmount){
+    public static BigInteger sumAmount(long[] receiverAmount) {
         BigInteger amount = BigInteger.ZERO;
-        if(receiverAmount.length>0){
-            for(int i=0;i<receiverAmount.length;i++){
+        if (receiverAmount.length > 0) {
+            for (int i = 0; i < receiverAmount.length; i++) {
                 amount = amount.add(BigInteger.valueOf((receiverAmount[i])));
-         }
+            }
         }
         return amount;
     }
 
     /**
      * 将空投地址数组转换格式
+     *
      * @param receiveraddresses
      * @return
      */
-    public static Address[] convertStringToAddres(String[] receiveraddresses){
+    public static Address[] convertStringToAddres(String[] receiveraddresses) {
         Address[] addresses = new Address[receiveraddresses.length];
-        for(int i=0;i<receiveraddresses.length;i++){
+        for (int i = 0; i < receiveraddresses.length; i++) {
             Address address = new Address(receiveraddresses[i]);
-            addresses[i]=address;
+            addresses[i] = address;
         }
         return addresses;
     }
 
-    private static boolean isNumeric(String str){
-        for(int i=0;i<str.length();i++){
-            int chr=str.charAt(i);
-            if(chr<48||chr>57){
+    private static boolean isNumeric(String str) {
+        for (int i = 0; i < str.length(); i++) {
+            int chr = str.charAt(i);
+            if (chr < 48 || chr > 57) {
                 return false;
             }
 
@@ -98,38 +121,38 @@ public class PocmUtil {
         return true;
     }
 
-    public static boolean canConvertNumeric(String str,String maxValue){
-        String trimStr=str.trim();
-        if(isNumeric(trimStr)){
-            if(trimStr.length()<maxValue.length()){
+    public static boolean canConvertNumeric(String str, String maxValue) {
+        String trimStr = str.trim();
+        if (isNumeric(trimStr)) {
+            if (trimStr.length() < maxValue.length()) {
                 return true;
-            }else if(trimStr.length()==maxValue.length()){
-                return trimStr.compareTo(maxValue)<=0;
-            }else{
+            } else if (trimStr.length() == maxValue.length()) {
+                return trimStr.compareTo(maxValue) <= 0;
+            } else {
                 return false;
             }
-        }else{
+        } else {
             return false;
         }
     }
 
-    public static boolean  checkValidity(String str){
-        if(str==null){
+    public static boolean checkValidity(String str) {
+        if (str == null) {
             return false;
         }
-        String strTmp =str.trim();
-        if(strTmp.length()>0 &&strTmp.length()<21){
-            if(strTmp.endsWith("_")||strTmp.startsWith("_")){
+        String strTmp = str.trim();
+        if (strTmp.length() > 0 && strTmp.length() < 21) {
+            if (strTmp.endsWith("_") || strTmp.startsWith("_")) {
                 return false;
             }
-            for(int i=0;i<strTmp.length();i++){
-                int chr=strTmp.charAt(i);
-                if(chr<48||(chr>57&&chr<65)||(chr>90&&chr<95)||(chr>95&&chr<97)||chr>122){
+            for (int i = 0; i < strTmp.length(); i++) {
+                int chr = strTmp.charAt(i);
+                if (chr < 48 || (chr > 57 && chr < 65) || (chr > 90 && chr < 95) || (chr > 95 && chr < 97) || chr > 122) {
                     return false;
                 }
             }
             return true;
-        }else{
+        } else {
             return false;
         }
     }

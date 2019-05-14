@@ -1,8 +1,10 @@
 package io.nuls.pocm.contract.model;
 
 import java.math.BigInteger;
+
 /**
  * 挖矿详细信息
+ *
  * @author: Long
  * @date: 2019-03-15
  */
@@ -10,7 +12,7 @@ public class MiningDetailInfo {
     //对应的抵押编号
     private long depositNumber;
     // 挖矿金额
-    private BigInteger miningAmount=BigInteger.ZERO;
+    private BigInteger miningAmount = BigInteger.ZERO;
 
     //采矿获得的Token的接收地址
     private String receiverMiningAddress;
@@ -24,11 +26,11 @@ public class MiningDetailInfo {
     //来源地址
     private String depositorAddress;
 
-    public MiningDetailInfo(String miningAddress ,String depositorAddress,long depositNumber){
-        this.receiverMiningAddress=miningAddress;
-        this.depositorAddress=depositorAddress;
-        this.depositNumber=depositNumber;
-        this.miningCount=0;
+    public MiningDetailInfo(String miningAddress, String depositorAddress, long depositNumber) {
+        this.receiverMiningAddress = miningAddress;
+        this.depositorAddress = depositorAddress;
+        this.depositNumber = depositNumber;
+        this.miningCount = 0;
     }
 
     public BigInteger getMiningAmount() {
@@ -80,9 +82,9 @@ public class MiningDetailInfo {
     }
 
     @Override
-    public String toString(){
-        return "{depositNumber:"+depositNumber+",miningAmount:"+miningAmount.toString()+",receiverMiningAddress:"+receiverMiningAddress
-                +",miningCount:"+miningCount+",nextStartMiningCycle:"+nextStartMiningCycle+",depositorAddress:"+depositorAddress+"}";
+    public String toString() {
+        return "{depositNumber:" + depositNumber + ",miningAmount:" + miningAmount.toString() + ",receiverMiningAddress:" + receiverMiningAddress
+                + ",miningCount:" + miningCount + ",nextStartMiningCycle:" + nextStartMiningCycle + ",depositorAddress:" + depositorAddress + "}";
     }
 
 }

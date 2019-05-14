@@ -8,13 +8,14 @@ import static io.nuls.contract.sdk.Utils.require;
 
 /**
  * 抵押信息
+ *
  * @author: Long
  * @date: 2019-03-15
  */
 public class DepositInfo {
 
     //抵押者地址
-    private String  depositorAddress;
+    private String depositorAddress;
 
     // 抵押金额
     private BigInteger depositTotalAmount;
@@ -25,18 +26,18 @@ public class DepositInfo {
     /**
      * 抵押详细信息列表
      */
-    private Map<Long,DepositDetailInfo> depositDetailInfos =new HashMap<Long,DepositDetailInfo>();
+    private Map<Long, DepositDetailInfo> depositDetailInfos = new HashMap<Long, DepositDetailInfo>();
 
-    public DepositInfo(){
-        this.depositTotalAmount=BigInteger.ZERO;
-        this.depositCount=0;
+    public DepositInfo() {
+        this.depositTotalAmount = BigInteger.ZERO;
+        this.depositCount = 0;
     }
 
-    public DepositInfo(DepositInfo info){
-        this.depositorAddress=info.depositorAddress;
-        this.depositTotalAmount=info.depositTotalAmount;
-        this.depositCount=info.depositCount;
-        this.depositDetailInfos=info.depositDetailInfos;
+    public DepositInfo(DepositInfo info) {
+        this.depositorAddress = info.depositorAddress;
+        this.depositTotalAmount = info.depositTotalAmount;
+        this.depositCount = info.depositCount;
+        this.depositDetailInfos = info.depositDetailInfos;
     }
 
     public BigInteger getDepositTotalAmount() {
@@ -74,46 +75,46 @@ public class DepositInfo {
 
     /**
      * 根据抵押编号获取抵押详细信息
+     *
      * @param depositNumber
      * @return
      */
-    public DepositDetailInfo getDepositDetailInfoByNumber(long depositNumber){
-        DepositDetailInfo info=depositDetailInfos.get(depositNumber);
+    public DepositDetailInfo getDepositDetailInfoByNumber(long depositNumber) {
+        DepositDetailInfo info = depositDetailInfos.get(depositNumber);
         require(info != null, "未找到此抵押编号的抵押详细信息");
         return info;
     }
 
     /**
-     *
      * @param depositNumber
      */
-    public void removeDepositDetailInfoByNumber(long depositNumber){
+    public void removeDepositDetailInfoByNumber(long depositNumber) {
         depositDetailInfos.remove(depositNumber);
     }
 
-    public void clearDepositDetailInfos(){
+    public void clearDepositDetailInfos() {
         depositDetailInfos.clear();
-        depositCount=0;
-        depositTotalAmount=BigInteger.ZERO;
+        depositCount = 0;
+        depositTotalAmount = BigInteger.ZERO;
     }
 
 
     @Override
-    public String toString(){
-        return  "{depositTotalAmount:"+depositTotalAmount+",depositorAddress:"+depositorAddress
-                +",depositCount:"+depositCount+",depositDetailInfos:"+convertMapToString()+"}";
+    public String toString() {
+        return "{depositTotalAmount:" + depositTotalAmount + ",depositorAddress:" + depositorAddress
+                + ",depositCount:" + depositCount + ",depositDetailInfos:" + convertMapToString() + "}";
     }
 
-    private  String convertMapToString(){
-        String detailinfo ="{";
-        String temp="";
+    private String convertMapToString() {
+        String detailinfo = "{";
+        String temp = "";
         for (Long key : depositDetailInfos.keySet()) {
-            DepositDetailInfo detailInfo=  depositDetailInfos.get(key);
-            temp =detailInfo.toString();
-            detailinfo=detailinfo+temp+",";
+            DepositDetailInfo detailInfo = depositDetailInfos.get(key);
+            temp = detailInfo.toString();
+            detailinfo = detailinfo + temp + ",";
         }
-        detailinfo=detailinfo.substring(0,detailinfo.length()-1);
-        detailinfo=detailinfo+"}";
+        detailinfo = detailinfo.substring(0, detailinfo.length() - 1);
+        detailinfo = detailinfo + "}";
 
         return detailinfo;
     }

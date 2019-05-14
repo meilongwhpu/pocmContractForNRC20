@@ -5,20 +5,30 @@ import java.math.BigInteger;
 
 /**
  * 奖励周期内的抵押信息
+ *
  * @author: Long
  * @date: 2019-04-19
  */
 public class RewardCycleInfo {
 
-    //奖励周期
+    /**
+     * 奖励周期
+     */
     private int rewardingCylce;
 
-    //当前奖励周期的单价
+    /**
+     * 当前奖励周期的单价
+     */
     private BigDecimal currentPrice;
-    //抵押总量
+
+    /**
+     * 抵押总量
+     */
     private BigInteger depositAmount;
 
-    //距离上次统计相差的奖励周期数
+    /**
+     * 距离上次统计相差的奖励周期数
+     */
     private int differCycleValue;
 
     public BigInteger getDepositAmount() {
@@ -54,8 +64,8 @@ public class RewardCycleInfo {
     }
 
     @Override
-    public String toString(){
-        return "{rewardingCylce:"+rewardingCylce+",currentPrice:"+currentPrice.toString()+",depositAmount:"+depositAmount
-                +",differCycleValue:"+differCycleValue+"}";
+    public String toString() {
+        return "{rewardingCylce:" + rewardingCylce + ",currentPrice:" + currentPrice.toString() + ",depositAmount:" + depositAmount
+                + ",differCycleValue:" + differCycleValue + "}";
     }
 }

@@ -7,6 +7,7 @@ import io.nuls.contract.sdk.annotation.View;
 
 import static io.nuls.contract.sdk.Utils.emit;
 import static io.nuls.contract.sdk.Utils.require;
+
 /**
  * @author: Long
  * @date: 2019-03-15
@@ -93,16 +94,16 @@ public class Ownable {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o){
+            if (this == o) {
                 return true;
             }
-            if (o == null || getClass() != o.getClass()){
+            if (o == null || getClass() != o.getClass()) {
                 return false;
             }
 
             OwnershipTransferredEvent that = (OwnershipTransferredEvent) o;
 
-            if (previousOwner != null ? !previousOwner.equals(that.previousOwner) : that.previousOwner != null){
+            if (previousOwner != null ? !previousOwner.equals(that.previousOwner) : that.previousOwner != null) {
                 return false;
             }
 
@@ -149,7 +150,7 @@ public class Ownable {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o){
+            if (this == o) {
                 return true;
             }
             if (o == null || getClass() != o.getClass()) {

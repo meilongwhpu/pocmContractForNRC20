@@ -18,7 +18,7 @@ import static io.nuls.pocm.contract.util.PocmUtil.*;
  * @author: Long
  * @date: 2019-03-15
  */
-public class PocmToken extends Ownable implements Token{
+public class PocmToken extends Ownable implements Token {
 
     private final String name;
     private final String symbol;
@@ -54,17 +54,17 @@ public class PocmToken extends Ownable implements Token{
 
     public PocmToken(String name, String symbol, BigInteger initialAmount, int decimals,
                      String[] receiverAddress, long[] receiverAmount) {
-        BigInteger receiverTotalAmount =BigInteger.ZERO;
-        if(receiverAddress!=null && receiverAmount!=null){
-            require(receiverAddress.length==receiverAmount.length,"接收Token的地址个数与设置的数量个数不一致");
-            require(convertStringToAddres(receiverAddress)!=null,"接收Token的地址中有非法地址");
-            require(checkAmount(receiverAmount),"接收数量的数组中有非法输入");
-            receiverTotalAmount =sumAmount(receiverAmount);
-            require(initialAmount.compareTo(receiverTotalAmount)>=0,"初始化发放的Token数量不能超过总发行量");
+        BigInteger receiverTotalAmount = BigInteger.ZERO;
+        if (receiverAddress != null && receiverAmount != null) {
+            require(receiverAddress.length == receiverAmount.length, "接收Token的地址个数与设置的数量个数不一致");
+            require(convertStringToAddres(receiverAddress) != null, "接收Token的地址中有非法地址");
+            require(checkAmount(receiverAmount), "接收数量的数组中有非法输入");
+            receiverTotalAmount = sumAmount(receiverAmount);
+            require(initialAmount.compareTo(receiverTotalAmount) >= 0, "初始化发放的Token数量不能超过总发行量");
         }
-        require(checkValidity(name.trim()),"Token的名称不符合要求");
-        require(checkValidity(symbol.trim()),"Token的符号不符合要求");
-        require(decimals<19,"Token使用的小数位数不超过18位");
+        require(checkValidity(name.trim()), "Token的名称不符合要求");
+        require(checkValidity(symbol.trim()), "Token的符号不符合要求");
+        require(decimals < 19, "Token使用的小数位数不超过18位");
         this.name = name;
         this.symbol = symbol;
         this.decimals = decimals;

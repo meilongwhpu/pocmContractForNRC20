@@ -4,6 +4,7 @@ import java.math.BigInteger;
 
 /**
  * 抵押详细信息
+ *
  * @author: Long
  * @date: 2019-03-15
  */
@@ -12,7 +13,7 @@ public class DepositDetailInfo {
     //抵押编号
     private long depositNumber;
     // 抵押金额（单位：na）
-    private BigInteger depositAmount=BigInteger.ZERO;
+    private BigInteger depositAmount = BigInteger.ZERO;
     // 抵押开始高度
     private long depositHeight;
 
@@ -52,8 +53,8 @@ public class DepositDetailInfo {
     }
 
     @Override
-    public String toString(){
-        return "{depositNumber:"+depositNumber+",depositHeight:"+depositHeight
-                +",miningAddress:"+miningAddress+",depositAmount:"+depositAmount+"}";
+    public String toString() {
+        return "{depositNumber:" + depositNumber + ",depositHeight:" + depositHeight
+                + ",miningAddress:" + miningAddress + ",depositAmount:" + depositAmount + "}";
     }
 }
